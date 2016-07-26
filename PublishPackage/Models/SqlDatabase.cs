@@ -8,6 +8,7 @@ namespace PublishPackage.Models
 {
     public class SqlDatabase
     {
+        public string DatabaseName { get; set; }
         public List<SqlTable> Tables { get; set; }
         public List<SqlView> Views { get; set; }
         public List<SqlProcedure> Procedures { get; set; }
@@ -23,6 +24,18 @@ namespace PublishPackage.Models
         //{
 
         //}
+
+        public string GetCreateScript()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("CREATE DATABASE [" + this.DatabaseName + "]\r\nGO\r\n\r\n");
+
+            sb.Append("USE [" + this.DatabaseName + "]\r\nGO\r\n\r\n");
+
+            sb.Append(string.Join("", this.Tables.Select(x => x.GetCreateScript())));
+
+            return sb.ToString();
+        }
 
         public string GetDiffScript(SqlDatabase db)
         {

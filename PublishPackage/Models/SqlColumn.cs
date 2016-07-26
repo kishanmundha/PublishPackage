@@ -63,10 +63,10 @@ namespace PublishPackage.Models
             }
         }
 
-        public int Length { get; set; }
-        public int Prec { get; set; }
-        public int Scale { get; set; }
-        public int DateTimePrec { get; set; }
+        public int? Length { get; set; }
+        public int? Prec { get; set; }
+        public int? Scale { get; set; }
+        public int? DateTimePrec { get; set; }
         public bool IsNullable { get; set; }
         public int OridinalPosition { get; set; }
 

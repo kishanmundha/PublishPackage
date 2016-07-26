@@ -9,6 +9,6 @@ namespace PublishPackage.Models
     public class SqlView
     {
         public string ViewName { get; set; }
-        public string ViewDefination { get; set; }
+        public string ViewDefinition { get; set; }
     }
 }

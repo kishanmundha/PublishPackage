@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PublishPackage.Models
 {
-    interface ISqlDefination
+    interface ISqlDefinition
     {
     }
 }

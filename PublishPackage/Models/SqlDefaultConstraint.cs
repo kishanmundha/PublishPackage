@@ -10,11 +10,11 @@ namespace PublishPackage.Models
     {
         public string ColumnName { get; set; }
         public string KeyName { get; set; }
-        public string Defination { get; set; }
+        public string Definition { get; set; }
 
         public virtual string GetAddScript(string TableName)
         {
-            return "ALTER TABLE [" + TableName + "] ADD CONSTRAINT [" + KeyName + "] DEFAULT " + Defination + " FOR [" + ColumnName + "]\r\nGO\r\n\r\n";
+            return "ALTER TABLE [" + TableName + "] ADD CONSTRAINT [" + KeyName + "] DEFAULT " + Definition + " FOR [" + ColumnName + "]\r\nGO\r\n\r\n";
         }
 
         public virtual string GetRenameScript(string OldKeyName)

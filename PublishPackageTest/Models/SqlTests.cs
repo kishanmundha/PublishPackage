@@ -109,7 +109,7 @@ namespace PublishPackageTest.Models
         [TestMethod]
         public void SqlDefaultConstraintGetAddScriptTest()
         {
-            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Defination = "((0))" };
+            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
 
             Assert.AreEqual(@"ALTER TABLE [Table1] ADD CONSTRAINT [DF_Table1_Column1] DEFAULT ((0)) FOR [Column1]
 GO
@@ -120,7 +120,7 @@ GO
         [TestMethod]
         public void SqlDefaultConstraintGetDropScriptTest()
         {
-            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Defination = "((0))" };
+            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
 
             Assert.AreEqual(@"ALTER TABLE [Table1] DROP CONSTRAINT [DF_Table1_Column1]
 GO
@@ -131,7 +131,7 @@ GO
         [TestMethod]
         public void SqlDefaultConstraintGetRenameScriptTest()
         {
-            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Defination = "((0))" };
+            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
 
             Assert.AreEqual(@"EXEC sp_rename N'OLD_KEY', N'DF_Table1_Column1', N'OBJECT'", constraint.GetRenameScript("OLD_KEY"));
         }
@@ -322,6 +322,15 @@ GO
             var compareResult = SqlDatabaseCompareResult.Compare(db1, db2);
 
             Console.WriteLine(compareResult.GetScript());
+        }
+
+        [TestMethod]
+        public void SqlDataReaderTest()
+        {
+            ISqlReader reader = new SqlReaderByDatabase();
+            var database = reader.Get("data source=.;initial catalog=Quotation;integrated security=False;User Id=sa;Password=12345");
+
+            var str = database.GetCreateScript();
         }
         #endregion
     }
