@@ -161,6 +161,38 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                     }
                     #endregion
 
+                    #region CheckConstraints
+                    {
+                        System.Data.DataView dv = new System.Data.DataView(checkConstraints);
+                        dv.RowFilter = "TableName='" + table.TableName + "'";
+                        var dt = dv.ToTable();
+
+                        foreach (System.Data.DataRow c in dt.Rows)
+                        {
+                            var checkConstraint = new SqlCheckConstraint();
+                            checkConstraint.ConstraintName = c["ConstraintName"] as string;
+                            checkConstraint.CheckClause = c["CheckClause"] as string;
+                            table.CheckConstraints.Add(checkConstraint);
+                        }
+                    }
+                    #endregion
+
+                    #region Default Constraints
+                    {
+                        System.Data.DataView dv = new System.Data.DataView(defaultConstraints);
+                        dv.RowFilter = "TableName='" + table.TableName + "'";
+                        var dt = dv.ToTable();
+
+                        foreach (System.Data.DataRow c in dt.Rows)
+                        {
+                            var defaultConstraint = new SqlDefaultConstraint();
+                            defaultConstraint.ColumnName = c["ColumnName"] as string;
+                            defaultConstraint.Definition = c["Definition"] as string;
+                            table.DefaultConstraints.Add(defaultConstraint);
+                        }
+                    }
+                    #endregion
+
                     database.Tables.Add(table);
                 }
             }
