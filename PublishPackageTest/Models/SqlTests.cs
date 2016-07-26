@@ -328,7 +328,7 @@ GO
         public void SqlDataReaderTest()
         {
             ISqlReader reader = new SqlReaderByDatabase();
-            var database = reader.Get("data source=.;initial catalog=Quotation;integrated security=False;User Id=sa;Password=12345");
+            var database = reader.Get("data source=10.160.0.18;initial catalog=BookMyFood;integrated security=False;User Id=sa;Password=zoomi@123");
 
             var str = database.GetCreateScript();
         }

@@ -18,6 +18,11 @@ namespace PublishPackage.Models
         private static readonly string PROCEDURE_LIST_COMMAND = "SELECT ROUTINE_NAME AS ProcedureName, ROUTINE_DEFINITION AS Definition FROM INFORMATION_SCHEMA.ROUTINES";
         private static readonly string COLUMN_LIST_COMMAND = "select table_name as TableName, column_name as ColumnName, data_type as DataType, CHARACTER_MAXIMUM_LENGTH as Length, NUMERIC_PRECISION as Prec, NUMERIC_SCALE as Scale, datetime_precision as DateTimePrec, ORDINAL_POSITION as OrdinalPosition, IS_NULLABLE as IsNullable from INFORMATION_SCHEMA.COLUMNS";
         private static readonly string CHECK_CONSTRAINT_LIST_COMMAND = "select object_name(parent_object_id) as TableName, name as ConstraintName, definition as CheckClause from sys.check_constraints";
+
+        private static readonly string IDENTITY_COLUMN_COMMAND = @"SELECT object_name(object_id) as TableName, name as ColumnName, seed_value as SeedValue, increment_value as IncrementValue
+FROM sys.identity_columns ic
+inner join INFORMATION_SCHEMA.TABLES t on t.table_name=object_name(object_id) and t.TABLE_TYPE='BASE TABLE'";
+
         private static readonly string DEFAULT_CONSTRAINT_LIST_COMMAND = @"select dc.name as KeyName, object_name(parent_object_id) as TableName, definition as Definition, c.name as ColumnName
 from sys.default_constraints dc
 inner join sys.columns c on dc.parent_object_id=c.object_id and dc.parent_column_id=c.column_id
@@ -78,6 +83,7 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
 
                 System.Data.DataTable tables = this.GetDataTable(TABLE_LIST_COMMAND, conn);
                 System.Data.DataTable columns = this.GetDataTable(COLUMN_LIST_COMMAND, conn);
+                System.Data.DataTable identityColumns = this.GetDataTable(IDENTITY_COLUMN_COMMAND, conn);
                 System.Data.DataTable checkConstraints = this.GetDataTable(CHECK_CONSTRAINT_LIST_COMMAND, conn);
                 System.Data.DataTable defaultConstraints = this.GetDataTable(DEFAULT_CONSTRAINT_LIST_COMMAND, conn);
                 System.Data.DataTable constraintsKeys = this.GetDataTable(CONSTRAINT_KEY_LIST_COMMAND, conn);
@@ -94,7 +100,23 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                     var table = new SqlTable();
                     table.TableName = row["TableName"] as string;
 
+                    #region Columns
                     {
+                        System.Data.DataView dvi = new System.Data.DataView(identityColumns);
+                        dvi.RowFilter = "TableName='" + table.TableName + "'";
+                        var dti = dvi.ToTable();
+
+                        string IdentityColumnName = null;
+                        SqlIdentityColumn identityColumn = null;
+
+                        if (dti.Rows.Count > 0)
+                        {
+                            IdentityColumnName = dti.Rows[0]["ColumnName"] as string;
+                            identityColumn = new SqlIdentityColumn();
+                            identityColumn.IncrementValue = Convert.ToInt64(dti.Rows[0]["IncrementValue"]);
+                            identityColumn.SeedValue = Convert.ToInt64(dti.Rows[0]["SeedValue"]);
+                        }
+
                         System.Data.DataView dv = new System.Data.DataView(columns);
                         dv.RowFilter = "TableName='" + table.TableName + "'";
                         var dt = dv.ToTable();
@@ -110,10 +132,18 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                             column.DateTimePrec = (c["DateTimePrec"] is DBNull) ? null : (short?)(c["DateTimePrec"]);
                             column.OridinalPosition = (int)(c["OrdinalPosition"]);
                             column.IsNullable = (c["IsNullable"] as string) == "YES";
+
+                            if(identityColumn != null && IdentityColumnName == column.ColumnName)
+                            {
+                                column.Identity = identityColumn;
+                            }
+
                             table.Columns.Add(column);
                         }
                     }
+                    #endregion
 
+                    #region ForeignKey
                     {
                         System.Data.DataView dv = new System.Data.DataView(foreignKeys);
                         dv.RowFilter = "TableName='" + table.TableName + "'";
@@ -129,6 +159,7 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                             table.ForeignKeys.Add(foreignKey);
                         }
                     }
+                    #endregion
 
                     database.Tables.Add(table);
                 }

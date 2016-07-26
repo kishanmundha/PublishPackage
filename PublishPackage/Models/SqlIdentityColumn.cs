@@ -8,7 +8,7 @@ namespace PublishPackage.Models
 {
     public class SqlIdentityColumn
     {
-        public int SeedValue { get; set; }
-        public int IncrementValue { get; set; }
+        public long SeedValue { get; set; }
+        public long IncrementValue { get; set; }
     }
 }
