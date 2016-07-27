@@ -44,7 +44,7 @@ namespace PublishPackage.Models
 
             //sb.Append(string.Join("", this.Tables.Select(x => x.GetCreateScript())));
 
-            sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetCreateScript())));
+            //sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetCreateScript())));
 
             sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetCreateScript())));
 

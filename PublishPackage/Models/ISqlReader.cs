@@ -189,6 +189,8 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                         foreach (System.Data.DataRow c in dt.Rows)
                         {
                             var defaultConstraint = new SqlDefaultConstraint();
+                            defaultConstraint.TableName = table.TableName;
+                            defaultConstraint.KeyName = c["KeyName"] as string;
                             defaultConstraint.ColumnName = c["ColumnName"] as string;
                             defaultConstraint.Definition = c["Definition"] as string;
                             table.DefaultConstraints.Add(defaultConstraint);
@@ -310,7 +312,8 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                     foreach (System.Data.DataRow c in dt.Rows)
                     {
                         var defaultConstraint = new SqlDefaultConstraint();
-                        defaultConstraints.TableName = c["TableName"] as string;
+                        defaultConstraint.KeyName = c["KeyName"] as string;
+                        defaultConstraint.TableName = c["TableName"] as string;
                         defaultConstraint.ColumnName = c["ColumnName"] as string;
                         defaultConstraint.Definition = c["Definition"] as string;
                         database.DefaultConstraints.Add(defaultConstraint);
