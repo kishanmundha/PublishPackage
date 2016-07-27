@@ -14,6 +14,11 @@ namespace PublishPackage.Models
         }
 
         public string KeyName { get; set; }
+        public string TableName { get; set; }
+        public bool IsPrimaryKey { get; set; }
+        public bool IsUniqueKey { get; set; }
+
+
         public SqlConstraintKeyType KeyType { get; set; }
         public bool IsClustred { get; set; }
 
