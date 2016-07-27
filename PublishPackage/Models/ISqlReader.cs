@@ -31,8 +31,8 @@ inner join sys.columns c on dc.parent_object_id=c.object_id and dc.parent_column
      TableName = t.name,
      KeyName = ind.name,
      ColumnName = col.name,
-	 TypeId = ind.type,
-	 TypeDesc = ind.type_desc,
+	 KeyTypeId = ind.type,
+	 KeyTypeDesc = ind.type_desc,
 	 IsUniqueKey = ind.is_unique,
 	 IsPrimaryKey = ind.is_primary_key,
 	 KeyOrdinal = ic.key_ordinal,
@@ -97,7 +97,8 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
 
                 database.DatabaseName = conn.Database;
 
-                foreach(System.Data.DataRow row in tables.Rows)
+                #region Tables
+                foreach (System.Data.DataRow row in tables.Rows)
                 {
                     var table = new SqlTable();
                     table.TableName = row["TableName"] as string;
@@ -135,7 +136,7 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                             column.OridinalPosition = (int)(c["OrdinalPosition"]);
                             column.IsNullable = (c["IsNullable"] as string) == "YES";
 
-                            if(identityColumn != null && IdentityColumnName == column.ColumnName)
+                            if (identityColumn != null && IdentityColumnName == column.ColumnName)
                             {
                                 column.Identity = identityColumn;
                             }
@@ -205,24 +206,41 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                             .Select(x => new
                             {
                                 KeyName = x["KeyName"].ToString(),
-                                KeyType = (int)x["KeyType"],
-                                IsClustred = (bool)x["IsClustred"]
+                                KeyTypeId = (byte)x["KeyTypeId"],
+                                KeyTypeDesc = (string)x["KeyTypeDesc"],
+                                IsPrimaryKey = (bool)x["IsPrimaryKey"],
+                                IsUniqueKey = (bool)x["IsUniqueKey"]
                             }).Distinct();
 
                         foreach (var dk in distinctKeys)
                         {
                             var constraintsKey = new SqlConstraintKey();
+                            constraintsKey.TableName = table.TableName;
                             constraintsKey.KeyName = dk.KeyName;
-                            constraintsKey.KeyType = (dk.KeyType == "" ? SqlConstraintKeyType.PrimaryKey : dk.KeyType == "" ? SqlConstraintKeyType.UniqueKey : SqlConstraintKeyType.Index );
-                            constraintsKey.IsClustred = dk.IsClustred;
+                            constraintsKey.KeyTypeId = dk.KeyTypeId;
+                            constraintsKey.KeyTypeDesc = dk.KeyTypeDesc;
+
+                            constraintsKey.IsPrimaryKey = dk.IsPrimaryKey;
+                            constraintsKey.IsUniqueKey = dk.IsUniqueKey;
+
+
+                            //constraintsKey.KeyType = (dk.KeyType == "" ? SqlConstraintKeyType.PrimaryKey : dk.KeyType == "" ? SqlConstraintKeyType.UniqueKey : SqlConstraintKeyType.Index);
+                            //constraintsKey.IsClustred = dk.IsClustred;
 
                             System.Data.DataView dv2 = new System.Data.DataView(dt);
                             dv2.RowFilter = "KeyName='" + constraintsKey.KeyName + "'";
-                            var dt2 = dv.ToTable();
+                            var dt2 = dv2.ToTable();
 
-                            foreach(System.Data.DataRow c2 in dt2.Rows)
+                            foreach (System.Data.DataRow c2 in dt2.Rows)
                             {
-                                constraintsKey.Columns.Add(new Tuple<string,bool>(c2["ColumnName"] as string, (bool)c2["IsDesending"]));
+                                //constraintsKey.Columns.Add(new Tuple<string, bool>(c2["ColumnName"] as string, (bool)c2["IsDesending"]));
+                                constraintsKey.KeyColumns.Add(new SqlConstraintKey.SqlConstraintKeyColumn
+                                {
+                                    ColumnName = c2["ColumnName"] as string,
+                                    KeyOrdinal = (byte)c2["KeyOrdinal"],
+                                    IsDecending = (bool)c2["IsDecending"],
+                                    IsIncludeColumn = (bool)c2["IsIncludeColumn"]
+                                });
                             }
 
                             table.ConstraintKeys.Add(constraintsKey);
@@ -232,6 +250,74 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
 
                     database.Tables.Add(table);
                 }
+                #endregion
+
+                #region Constraint Keys
+                {
+                    var dt = constraintsKeys;
+
+                    var distinctKeys = dt.Rows.OfType<System.Data.DataRow>()
+                        .Select(x => new
+                        {
+                            TableName = x["TableName"].ToString(),
+                            KeyName = x["KeyName"].ToString(),
+                            KeyTypeId = (byte)x["KeyTypeId"],
+                            KeyTypeDesc = (string)x["KeyTypeDesc"],
+                            IsPrimaryKey = (bool)x["IsPrimaryKey"],
+                            IsUniqueKey = (bool)x["IsUniqueKey"]
+                        }).Distinct();
+
+                    foreach (var dk in distinctKeys)
+                    {
+                        var constraintsKey = new SqlConstraintKey();
+                        constraintsKey.TableName = dk.TableName;
+                        constraintsKey.KeyName = dk.KeyName;
+                        constraintsKey.KeyTypeId = dk.KeyTypeId;
+                        constraintsKey.KeyTypeDesc = dk.KeyTypeDesc;
+
+                        constraintsKey.IsPrimaryKey = dk.IsPrimaryKey;
+                        constraintsKey.IsUniqueKey = dk.IsUniqueKey;
+
+
+                        //constraintsKey.KeyType = (dk.KeyType == "" ? SqlConstraintKeyType.PrimaryKey : dk.KeyType == "" ? SqlConstraintKeyType.UniqueKey : SqlConstraintKeyType.Index);
+                        //constraintsKey.IsClustred = dk.IsClustred;
+
+                        System.Data.DataView dv2 = new System.Data.DataView(dt);
+                        dv2.RowFilter = "KeyName='" + constraintsKey.KeyName + "'";
+                        var dt2 = dv2.ToTable();
+
+                        foreach (System.Data.DataRow c2 in dt2.Rows)
+                        {
+                            //constraintsKey.Columns.Add(new Tuple<string, bool>(c2["ColumnName"] as string, (bool)c2["IsDesending"]));
+                            constraintsKey.KeyColumns.Add(new SqlConstraintKey.SqlConstraintKeyColumn
+                            {
+                                ColumnName = c2["ColumnName"] as string,
+                                KeyOrdinal = (byte)c2["KeyOrdinal"],
+                                IsDecending = (bool)c2["IsDecending"],
+                                IsIncludeColumn = (bool)c2["IsIncludeColumn"]
+                            });
+                        }
+
+                        database.ConstraintKeys.Add(constraintsKey);
+                    }
+                }
+                #endregion
+
+                #region Default Constraints
+                {
+                    var dt = defaultConstraints;
+
+                    foreach (System.Data.DataRow c in dt.Rows)
+                    {
+                        var defaultConstraint = new SqlDefaultConstraint();
+                        defaultConstraints.TableName = c["TableName"] as string;
+                        defaultConstraint.ColumnName = c["ColumnName"] as string;
+                        defaultConstraint.Definition = c["Definition"] as string;
+                        database.DefaultConstraints.Add(defaultConstraint);
+                    }
+                }
+                #endregion
+
             }
 
             return database;

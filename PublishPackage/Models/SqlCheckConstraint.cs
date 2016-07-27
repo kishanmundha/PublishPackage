@@ -8,10 +8,16 @@ namespace PublishPackage.Models
 {
     public class SqlCheckConstraint : IDataCompare
     {
+        public string TableName { get; set; }
         public string ConstraintName { get; set; }
         public string CheckClause { get; set; }
 
-        public virtual string GetScript(string TableName)
+        public virtual string GetCreateScript()
+        {
+            return GetScript();
+        }
+
+        public virtual string GetScript()
         {
             return string.Format(@"ALTER TABLE [{0}] WITH CHECK ADD CONSTRAINT [{1}] CHECK ({2})
 GO
@@ -19,7 +25,7 @@ GO
 ALTER TABLE [{0}] CHECK CONSTRAINT [{1}]
 GO
 
-", TableName, ConstraintName, CheckClause);
+", this.TableName, ConstraintName, CheckClause);
         }
 
         public string KeyName
@@ -30,11 +36,6 @@ GO
         public string MD5Hash
         {
             get { throw new NotImplementedException(); }
-        }
-
-        public string GetScript()
-        {
-            throw new NotImplementedException();
         }
     }
 }

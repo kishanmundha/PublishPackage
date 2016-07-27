@@ -13,11 +13,21 @@ namespace PublishPackage.Models
         public List<SqlView> Views { get; set; }
         public List<SqlProcedure> Procedures { get; set; }
 
+        public List<SqlCheckConstraint> CheckConstraints { get; set; }
+        public List<SqlDefaultConstraint> DefaultConstraints { get; set; }
+        public List<SqlConstraintKey> ConstraintKeys { get; set; }
+        public List<SqlForeignKey> ForeignKeys { get; set; }
+
         public SqlDatabase()
         {
             this.Tables = new List<SqlTable>();
             this.Views = new List<SqlView>();
             this.Procedures = new List<SqlProcedure>();
+
+            this.CheckConstraints = new List<SqlCheckConstraint>();
+            this.DefaultConstraints = new List<SqlDefaultConstraint>();
+            this.ConstraintKeys = new List<SqlConstraintKey>();
+            this.ForeignKeys = new List<SqlForeignKey>();
         }
 
         //public static void Compare(SqlDatabase db1, SqlDatabase db2)
@@ -32,7 +42,11 @@ namespace PublishPackage.Models
 
             sb.Append("USE [" + this.DatabaseName + "]\r\nGO\r\n\r\n");
 
-            sb.Append(string.Join("", this.Tables.Select(x => x.GetCreateScript())));
+            //sb.Append(string.Join("", this.Tables.Select(x => x.GetCreateScript())));
+
+            sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetCreateScript())));
+
+            sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetCreateScript())));
 
             return sb.ToString();
         }

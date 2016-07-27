@@ -71,11 +71,11 @@ namespace PublishPackage.Models
             sb.Append("\r\n)\r\n");
             sb.Append("GO\r\n\r\n");
 
-            sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetAddScript(this.TableName))));
+            sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetAddScript())));
 
             sb.Append(string.Join("", this.ForeignKeys.Select(x => x.GetScript(this.TableName))));
 
-            sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetScript(this.TableName))));
+            sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetScript())));
 
             return sb.ToString();
         }

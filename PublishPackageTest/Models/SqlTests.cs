@@ -109,23 +109,23 @@ namespace PublishPackageTest.Models
         [TestMethod]
         public void SqlDefaultConstraintGetAddScriptTest()
         {
-            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
+            SqlDefaultConstraint constraint = new SqlDefaultConstraint { TableName = "Table1", ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
 
             Assert.AreEqual(@"ALTER TABLE [Table1] ADD CONSTRAINT [DF_Table1_Column1] DEFAULT ((0)) FOR [Column1]
 GO
 
-", constraint.GetAddScript("Table1"));
+", constraint.GetAddScript());
         }
 
         [TestMethod]
         public void SqlDefaultConstraintGetDropScriptTest()
         {
-            SqlDefaultConstraint constraint = new SqlDefaultConstraint { ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
+            SqlDefaultConstraint constraint = new SqlDefaultConstraint { TableName = "Table1", ColumnName = "Column1", KeyName = "DF_Table1_Column1", Definition = "((0))" };
 
             Assert.AreEqual(@"ALTER TABLE [Table1] DROP CONSTRAINT [DF_Table1_Column1]
 GO
 
-", constraint.GetDropScript("Table1"));
+", constraint.GetDropScript());
         }
 
         [TestMethod]
@@ -169,7 +169,7 @@ GO
         [TestMethod]
         public void SqlCheckConstraintGetScriptTest()
         {
-            var constraint = new SqlCheckConstraint { ConstraintName = "CK_Value", CheckClause = "[Id]>(0)" };
+            var constraint = new SqlCheckConstraint { TableName = "Table1", ConstraintName = "CK_Value", CheckClause = "[Id]>(0)" };
 
             Assert.AreEqual(@"ALTER TABLE [Table1] WITH CHECK ADD CONSTRAINT [CK_Value] CHECK ([Id]>(0))
 GO
@@ -177,7 +177,7 @@ GO
 ALTER TABLE [Table1] CHECK CONSTRAINT [CK_Value]
 GO
 
-", constraint.GetScript("Table1"));
+", constraint.GetScript());
         }
 
         #endregion
@@ -201,16 +201,16 @@ GO
 
             var checkConstraint1 = new Mock<SqlCheckConstraint>();
             var checkConstraint2 = new Mock<SqlCheckConstraint>();
-            checkConstraint1.Setup(x => x.GetScript(It.IsAny<string>())).Returns("CHECKCONSTRAINT1\r\nGO\r\n\r\n");
-            checkConstraint2.Setup(x => x.GetScript(It.IsAny<string>())).Returns("CHECKCONSTRAINT2\r\nGO\r\n\r\n");
+            checkConstraint1.Setup(x => x.GetScript()).Returns("CHECKCONSTRAINT1\r\nGO\r\n\r\n");
+            checkConstraint2.Setup(x => x.GetScript()).Returns("CHECKCONSTRAINT2\r\nGO\r\n\r\n");
 
             table.CheckConstraints.Add(checkConstraint1.Object);
             table.CheckConstraints.Add(checkConstraint2.Object);
 
             var defaultConstraint1 = new Mock<SqlDefaultConstraint>();
             var defaultConstraint2 = new Mock<SqlDefaultConstraint>();
-            defaultConstraint1.Setup(x => x.GetAddScript(It.IsAny<string>())).Returns("DEFAULTCONSTRAINT1\r\nGO\r\n\r\n");
-            defaultConstraint2.Setup(x => x.GetAddScript(It.IsAny<string>())).Returns("DEFAULTCONSTRAINT2\r\nGO\r\n\r\n");
+            defaultConstraint1.Setup(x => x.GetAddScript()).Returns("DEFAULTCONSTRAINT1\r\nGO\r\n\r\n");
+            defaultConstraint2.Setup(x => x.GetAddScript()).Returns("DEFAULTCONSTRAINT2\r\nGO\r\n\r\n");
 
             table.DefaultConstraints.Add(defaultConstraint1.Object);
             table.DefaultConstraints.Add(defaultConstraint2.Object);

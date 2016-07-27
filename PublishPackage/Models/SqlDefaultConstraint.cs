@@ -8,11 +8,17 @@ namespace PublishPackage.Models
 {
     public class SqlDefaultConstraint : IDataCompare
     {
+        public string TableName { get; set; }
         public string ColumnName { get; set; }
         public string KeyName { get; set; }
         public string Definition { get; set; }
 
-        public virtual string GetAddScript(string TableName)
+        public virtual string GetCreateScript()
+        {
+            return this.GetAddScript();
+        }
+
+        public virtual string GetAddScript()
         {
             return "ALTER TABLE [" + TableName + "] ADD CONSTRAINT [" + KeyName + "] DEFAULT " + Definition + " FOR [" + ColumnName + "]\r\nGO\r\n\r\n";
         }
@@ -22,7 +28,7 @@ namespace PublishPackage.Models
             return string.Format("EXEC sp_rename N'{0}', N'{1}', N'OBJECT'", OldKeyName, KeyName);
         }
 
-        public virtual string GetDropScript(string TableName)
+        public virtual string GetDropScript()
         {
             return "ALTER TABLE [" + TableName + "] DROP CONSTRAINT [" + KeyName + "]\r\nGO\r\n\r\n";
         }

@@ -11,12 +11,17 @@ namespace PublishPackage.Models
         public SqlConstraintKey()
         {
             this.Columns = new List<Tuple<string, bool>>();
+            this.KeyColumns = new List<SqlConstraintKeyColumn>();
         }
 
         public string KeyName { get; set; }
         public string TableName { get; set; }
         public bool IsPrimaryKey { get; set; }
         public bool IsUniqueKey { get; set; }
+        public int KeyTypeId { get; set; }
+        public string KeyTypeDesc { get; set; }
+
+        public List<SqlConstraintKeyColumn> KeyColumns { get; set; }
 
 
         public SqlConstraintKeyType KeyType { get; set; }
@@ -31,19 +36,26 @@ namespace PublishPackage.Models
         {
             string script = "CONSTRAINT [" + KeyName + "] ";
 
-            switch(KeyType)
-            {
-                case SqlConstraintKeyType.PrimaryKey:
-                    script += "PRIMARY KEY";
-                    break;
-                case SqlConstraintKeyType.UniqueKey:
-                    script += "UNIQUE";
-                    break;
-                //case SqlConstraintKeyType.Index:
-                //    break;
-            }
+            if (IsPrimaryKey)
+                script += "PRIMARY KEY";
+            if (IsUniqueKey)
+                script += "UNIQUE";
 
-            script += " " + (IsClustred ? "CLUSTERED" : "NONCLUSTERED");
+            //switch (KeyType)
+            //{
+            //    case SqlConstraintKeyType.PrimaryKey:
+            //        script += "PRIMARY KEY";
+            //        break;
+            //    case SqlConstraintKeyType.UniqueKey:
+            //        script += "UNIQUE";
+            //        break;
+            //    //case SqlConstraintKeyType.Index:
+            //    //    break;
+            //}
+
+            //script += " " + (IsClustred ? "CLUSTERED" : "NONCLUSTERED");
+
+            script += " " + KeyTypeDesc;
 
             script += " (";
 
@@ -58,6 +70,14 @@ namespace PublishPackage.Models
         public string MD5Hash
         {
             get { return Helper.GetMD5Hash(this.GetScript()); }
+        }
+
+        public class SqlConstraintKeyColumn
+        {
+            public string ColumnName { get; set; }
+            public int KeyOrdinal { get; set; }
+            public bool IsDecending { get; set; }
+            public bool IsIncludeColumn { get; set; }
         }
     }
 }
