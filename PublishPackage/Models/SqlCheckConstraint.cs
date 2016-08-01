@@ -37,5 +37,20 @@ GO
         {
             get { throw new NotImplementedException(); }
         }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                this.TableName,
+                this.KeyName,
+                this.CheckClause
+            };
+        }
+
+        public string GetDropScript()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

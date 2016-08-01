@@ -10,5 +10,14 @@ namespace PublishPackage.Models
     {
         public long SeedValue { get; set; }
         public long IncrementValue { get; set; }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                SeedValue = this.SeedValue,
+                IncrementValue = this.IncrementValue
+            };
+        }
     }
 }

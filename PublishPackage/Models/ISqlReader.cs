@@ -54,12 +54,22 @@ INNER JOIN
 ORDER BY 
      t.name, ind.name, ind.index_id, ic.index_column_id 
 ";
-        private static readonly string FOREIGN_KEY_LIST_COMMAND = @"SELECT RC.CONSTRAINT_NAME KeyName, KF.TABLE_NAME TableName, KF.COLUMN_NAME KeyColumnName, KP.TABLE_NAME ForeignTableName, KP.COLUMN_NAME ForeignColumnName
-FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC
-JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KF ON RC.CONSTRAINT_NAME = KF.CONSTRAINT_NAME
-JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CONSTRAINT_NAME
-";
+//        private static readonly string FOREIGN_KEY_LIST_COMMAND = @"SELECT RC.CONSTRAINT_NAME KeyName, KF.TABLE_NAME TableName, KF.COLUMN_NAME KeyColumnName, KP.TABLE_NAME ForeignTableName, KP.COLUMN_NAME ForeignColumnName
+//FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC
+//JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KF ON RC.CONSTRAINT_NAME = KF.CONSTRAINT_NAME
+//JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CONSTRAINT_NAME
+//";
 
+        private static readonly string FOREIGN_KEY_LIST_COMMAND = @"SELECT f.name AS KeyName, 
+   OBJECT_NAME(f.parent_object_id) AS TableName, 
+   COL_NAME(fc.parent_object_id, fc.parent_column_id) AS KeyColumnName, 
+   OBJECT_NAME (f.referenced_object_id) AS ForeignTableName, 
+   COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS ForeignColumnName 
+FROM sys.foreign_keys AS f 
+INNER JOIN sys.foreign_key_columns AS fc 
+   ON f.OBJECT_ID = fc.constraint_object_id
+ORDER BY KeyName
+";
         private System.Data.DataTable GetDataTable(string cmdText, System.Data.SqlClient.SqlConnection conn)
         {
             System.Data.DataTable dt = new System.Data.DataTable();
@@ -155,6 +165,7 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                         foreach (System.Data.DataRow c in dt.Rows)
                         {
                             var foreignKey = new SqlForeignKey();
+                            foreignKey.TableName = c["TableName"] as string;
                             foreignKey.KeyName = c["KeyName"] as string;
                             foreignKey.KeyColumnName = c["KeyColumnName"] as string;
                             foreignKey.ForeignTableName = c["ForeignTableName"] as string;
@@ -321,6 +332,45 @@ JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KP ON RC.UNIQUE_CONSTRAINT_NAME = KP.CO
                 }
                 #endregion
 
+                #region Foreign Keys
+                {
+                    var dt = foreignKeys;
+
+                    foreach (System.Data.DataRow c in dt.Rows)
+                    {
+                        var foreignKey = new SqlForeignKey();
+                        foreignKey.TableName = c["TableName"] as string;
+                        foreignKey.KeyName = c["KeyName"] as string;
+                        foreignKey.KeyColumnName = c["KeyColumnName"] as string;
+                        foreignKey.ForeignTableName = c["ForeignTableName"] as string;
+                        foreignKey.ForeignColumnName = c["ForeignColumnName"] as string;
+                        database.ForeignKeys.Add(foreignKey);
+                    }
+
+                }
+                #endregion
+
+                #region Views
+                foreach(System.Data.DataRow row in views.Rows)
+                {
+                    SqlView v = new SqlView();
+                    v.ViewName = row["ViewName"] as string;
+                    v.ViewDefinition = row["ViewDefinition"] as string;
+
+                    database.Views.Add(v);
+                }
+                #endregion
+
+                #region Procedures
+                foreach (System.Data.DataRow row in procedures.Rows)
+                {
+                    SqlProcedure procedure = new SqlProcedure();
+                    procedure.ProcedureName = row["ProcedureName"] as string;
+                    procedure.ProcedureDefination = row["Definition"] as string;
+
+                    database.Procedures.Add(procedure);
+                }
+                #endregion
             }
 
             return database;

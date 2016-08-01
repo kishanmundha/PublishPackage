@@ -36,12 +36,23 @@ namespace PublishPackage.Models
 
         public string MD5Hash
         {
-            get { throw new NotImplementedException(); }
+            get { return Helper.GetMD5Hash(this.GetScript()); }
         }
 
         public string GetScript()
         {
-            throw new NotImplementedException();
+            return this.GetAddScript();
+        }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                TableName = this.TableName,
+                ColumnName = this.ColumnName,
+                KeyName = this.KeyName,
+                Definition = this.Definition
+            };
         }
     }
 }

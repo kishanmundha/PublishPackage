@@ -69,6 +69,11 @@ namespace PublishPackage.Models
         //    }
         //}
 
+        public override string ToString()
+        {
+            return this.KeyName + " | " + (this.Status.ToString());
+        }
+
         public DataCompareResult()
         {
             

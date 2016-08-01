@@ -8,12 +8,18 @@ namespace PublishPackage.Models
 {
     public class SqlForeignKey : IDataCompare
     {
+        public string TableName { get; set; }
         public string KeyName { get; set; }
         public string KeyColumnName { get; set; }
         public string ForeignColumnName { get; set; }
         public string ForeignTableName { get; set; }
 
-        public virtual string GetScript(string TableName)
+        public override string ToString()
+        {
+            return this.KeyName + " | " + this.TableName;
+        }
+
+        public virtual string GetScript()
         {
             string script = "ALTER TABLE [" + TableName + "] WITH CHECK ADD CONSTRAINT [" + KeyName + "] FOREIGN KEY ([" + KeyColumnName + "]) REFERENCES [" + ForeignTableName + "] ([" + ForeignColumnName + "])\r\nGO\r\n\r\n";
 
@@ -22,7 +28,7 @@ namespace PublishPackage.Models
             return script;
         }
 
-        public virtual string GetDropScript(string TableName)
+        public virtual string GetDropScript()
         {
             return "ALTER TABLE [" + TableName + "] DROP CONSTRAINT [" + KeyName + "]\r\nGO\r\n\r\n";
         }
@@ -30,12 +36,24 @@ namespace PublishPackage.Models
 
         public string MD5Hash
         {
-            get { throw new NotImplementedException(); }
+            get { return Helper.GetMD5Hash(this.GetScript()); }
         }
 
-        public string GetScript()
+        public string GetCreateScript()
         {
-            throw new NotImplementedException();
+            return this.GetScript();
+        }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                TableName,
+                KeyName,
+                KeyColumnName,
+                ForeignColumnName,
+                ForeignTableName,
+            };
         }
     }
 }

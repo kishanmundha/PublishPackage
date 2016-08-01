@@ -46,9 +46,18 @@ namespace PublishPackage.Models
             this.ConstraintKeys = new List<SqlConstraintKey>();
         }
 
-        public string JsonString()
+        public override string ToString()
         {
-            throw new NotImplementedException();
+            return this.TableName;
+        }
+
+        public virtual object GetJsonObject()
+        {
+            return new
+            {
+                TableName = this.TableName,
+                Columns = this.Columns.Select(x=>x.GetJsonObject())
+            };
         }
 
         public string GetCreateScript()
@@ -71,11 +80,11 @@ namespace PublishPackage.Models
             sb.Append("\r\n)\r\n");
             sb.Append("GO\r\n\r\n");
 
-            sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetAddScript())));
+            //sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetAddScript())));
 
-            sb.Append(string.Join("", this.ForeignKeys.Select(x => x.GetScript(this.TableName))));
+            //sb.Append(string.Join("", this.ForeignKeys.Select(x => x.GetScript())));
 
-            sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetScript())));
+            //sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetScript())));
 
             return sb.ToString();
         }

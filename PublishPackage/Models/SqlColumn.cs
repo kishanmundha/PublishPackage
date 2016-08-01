@@ -72,6 +72,10 @@ namespace PublishPackage.Models
 
         public SqlIdentityColumn Identity { get; set; }
 
+        public override string ToString()
+        {
+            return this.ColumnName;
+        }
         public virtual string GetScript()
         {
             string script = "[" + ColumnName + "] [" + DataType + "]";
@@ -121,7 +125,27 @@ GO
 
         public virtual string GetAlterScript(string tableName)
         {
-            throw new NotImplementedException();
+            return string.Format(@"ALTER TABLE [{0}]
+ALTER COLUMN {1}
+GO
+
+", tableName, this.GetScript());
+        }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                ColumnName = this.ColumnName,
+                DataType = this.DataType,
+                Length = this.Length,
+                Prec = this.Prec,
+                Scale = this.Scale,
+                DateTimePrec = this.DateTimePrec,
+                IsNullable = this.IsNullable,
+                OridinalPosition = this.OridinalPosition,
+                Identity = this.Identity == null ? null : this.Identity.GetJsonObject()
+            };
         }
     }
 }

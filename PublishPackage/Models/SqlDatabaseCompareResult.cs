@@ -9,22 +9,34 @@ namespace PublishPackage.Models
     public class SqlDatabaseCompareResult
     {
         public List<DataCompareResult<SqlTable>> Tables { get; set; }
-        //public List<DataCompareResult> Views { get; set; }
-        //public List<DataCompareResult> Procedures { get; set; }
+        public List<DataCompareResult<SqlView>> Views { get; set; }
+        public List<DataCompareResult<SqlProcedure>> Procedures { get; set; }
+
+        public List<DataCompareResult<SqlCheckConstraint>> CheckConstraints { get; set; }
+        public List<DataCompareResult<SqlDefaultConstraint>> DefaultConstraints { get; set; }
+        public List<DataCompareResult<SqlConstraintKey>> ConstraintKeys { get; set; }
+        public List<DataCompareResult<SqlForeignKey>> ForeignKeys { get; set; }
 
         public SqlDatabaseCompareResult()
         {
             this.Tables = new List<DataCompareResult<SqlTable>>();
-            //this.Views = new List<DataCompareResult>();
-            //this.Procedures = new List<DataCompareResult>();
+            this.Views = new List<DataCompareResult<SqlView>>();
+            this.Procedures = new List<DataCompareResult<SqlProcedure>>();
+
+            this.CheckConstraints = new List<DataCompareResult<SqlCheckConstraint>>();
+            this.DefaultConstraints = new List<DataCompareResult<SqlDefaultConstraint>>();
+            this.ConstraintKeys = new List<DataCompareResult<SqlConstraintKey>>();
+            this.ForeignKeys = new List<DataCompareResult<SqlForeignKey>>();
         }
 
         public string GetScript()
         {
             StringBuilder sb = new StringBuilder();
+
+            #region Table
             foreach (var table in this.Tables)
             {
-                switch(table.Status)
+                switch (table.Status)
                 {
                     case DataCompareStatus.New:
                         sb.Append(table.NewData.GetCreateScript());
@@ -38,6 +50,117 @@ namespace PublishPackage.Models
                         break;
                 }
             }
+            #endregion
+
+            #region CheckConstraints
+            foreach (var checkConstraint in this.CheckConstraints)
+            {
+                switch (checkConstraint.Status)
+                {
+                    case DataCompareStatus.New:
+                        sb.Append(checkConstraint.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Modified:
+                        sb.Append(checkConstraint.OldData.GetDropScript());
+                        sb.Append(checkConstraint.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Deleted:
+                        sb.Append(checkConstraint.OldData.GetDropScript());
+                        break;
+                }
+            }
+            #endregion
+
+            #region DefaultConstraints
+            foreach (var defaultConstraint in this.DefaultConstraints)
+            {
+                switch (defaultConstraint.Status)
+                {
+                    case DataCompareStatus.New:
+                        sb.Append(defaultConstraint.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Modified:
+                        sb.Append(defaultConstraint.OldData.GetDropScript());
+                        sb.Append(defaultConstraint.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Deleted:
+                        sb.Append(defaultConstraint.OldData.GetDropScript());
+                        break;
+                }
+            }
+            #endregion
+            #region ConstraintKeys
+            foreach (var constraintKey in this.ConstraintKeys)
+            {
+                switch (constraintKey.Status)
+                {
+                    case DataCompareStatus.New:
+                        sb.Append(constraintKey.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Modified:
+                        sb.Append(constraintKey.OldData.GetDropScript());
+                        sb.Append(constraintKey.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Deleted:
+                        sb.Append(constraintKey.OldData.GetDropScript());
+                        break;
+                }
+            }
+            #endregion
+            #region ForeignKeys
+            foreach (var foreignKey in this.ForeignKeys)
+            {
+                switch (foreignKey.Status)
+                {
+                    case DataCompareStatus.New:
+                        sb.Append(foreignKey.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Modified:
+                        sb.Append(foreignKey.OldData.GetDropScript());
+                        sb.Append(foreignKey.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Deleted:
+                        sb.Append(foreignKey.OldData.GetDropScript());
+                        break;
+                }
+            }
+            #endregion
+
+            #region Views
+            foreach (var view in this.Views)
+            {
+                switch (view.Status)
+                {
+                    case DataCompareStatus.New:
+                        sb.Append(view.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Modified:
+                        sb.Append(view.NewData.GetAlterScript());
+                        break;
+                    case DataCompareStatus.Deleted:
+                        sb.Append(view.OldData.GetDropScript());
+                        break;
+                }
+            }
+            #endregion
+
+            #region Procedures
+            foreach (var procedure in this.Procedures)
+            {
+                switch (procedure.Status)
+                {
+                    case DataCompareStatus.New:
+                        sb.Append(procedure.NewData.GetCreateScript());
+                        break;
+                    case DataCompareStatus.Modified:
+                        sb.Append(procedure.NewData.GetAlterScript());
+                        break;
+                    case DataCompareStatus.Deleted:
+                        sb.Append(procedure.OldData.GetDropScript());
+                        break;
+                }
+            }
+            #endregion
 
             return sb.ToString();
         }
@@ -47,6 +170,13 @@ namespace PublishPackage.Models
             var result = new SqlDatabaseCompareResult();
 
             result.Tables.AddRange(Helper.GetCompareResult<SqlTable>(db1.Tables.Cast<IDataCompare>().ToList(), db2.Tables.Cast<IDataCompare>().ToList()));
+            result.CheckConstraints.AddRange(Helper.GetCompareResult<SqlCheckConstraint>(db1.CheckConstraints.Cast<IDataCompare>().ToList(), db2.CheckConstraints.Cast<IDataCompare>().ToList()));
+            result.DefaultConstraints.AddRange(Helper.GetCompareResult<SqlDefaultConstraint>(db1.DefaultConstraints.Cast<IDataCompare>().ToList(), db2.DefaultConstraints.Cast<IDataCompare>().ToList()));
+            result.ConstraintKeys.AddRange(Helper.GetCompareResult<SqlConstraintKey>(db1.ConstraintKeys.Cast<IDataCompare>().ToList(), db2.ConstraintKeys.Cast<IDataCompare>().ToList()));
+            result.ForeignKeys.AddRange(Helper.GetCompareResult<SqlForeignKey>(db1.ForeignKeys.Cast<IDataCompare>().ToList(), db2.ForeignKeys.Cast<IDataCompare>().ToList()));
+
+            result.Views.AddRange(Helper.GetCompareResult<SqlView>(db1.Views.Cast<IDataCompare>().ToList(), db2.Views.Cast<IDataCompare>().ToList()));
+            result.Procedures.AddRange(Helper.GetCompareResult<SqlProcedure>(db1.Procedures.Cast<IDataCompare>().ToList(), db2.Procedures.Cast<IDataCompare>().ToList()));
 
             return result;
         }
@@ -80,7 +210,7 @@ namespace PublishPackage.Models
                         sb.Append(column.NewData.GetAddScript(tableName));
                         break;
                     case DataCompareStatus.Modified:
-                        //sb.Append(column.OldData)
+                        sb.Append(column.NewData.GetAlterScript(tableName));
                         break;
                     case DataCompareStatus.Renamed:
                         sb.Append(column.OldData.GetRenameScript(tableName, column.NewData.KeyName));

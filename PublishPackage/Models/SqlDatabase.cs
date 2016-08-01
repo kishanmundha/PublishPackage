@@ -42,11 +42,15 @@ namespace PublishPackage.Models
 
             sb.Append("USE [" + this.DatabaseName + "]\r\nGO\r\n\r\n");
 
-            //sb.Append(string.Join("", this.Tables.Select(x => x.GetCreateScript())));
-
-            //sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetCreateScript())));
+            sb.Append(string.Join("", this.Tables.Select(x => x.GetCreateScript())));
 
             sb.Append(string.Join("", this.DefaultConstraints.Select(x => x.GetCreateScript())));
+
+            sb.Append(string.Join("", this.ForeignKeys.Select(x => x.GetCreateScript())));
+
+            sb.Append(string.Join("", this.CheckConstraints.Select(x => x.GetCreateScript())));
+
+            sb.Append(string.Join("", this.ConstraintKeys.Select(x => x.GetCreateScript())));
 
             return sb.ToString();
         }
@@ -79,6 +83,23 @@ namespace PublishPackage.Models
             }
 
             throw new NotImplementedException();
+        }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                Tables = this.Tables.Select(x=>x.GetJsonObject()),
+                DefaultConstraints = this.DefaultConstraints.Select(x => x.GetJsonObject()),
+                ConstraintKeys = this.ConstraintKeys.Select(x => x.GetJsonObject()),
+                CheckConstraints = this.CheckConstraints.Select(x => x.GetJsonObject()),
+                ForeignKeys = this.ForeignKeys.Select(x => x.GetJsonObject())
+            };
+        }
+
+        public string GetJsonString()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this.GetJsonObject());
         }
     }
 }
