@@ -60,9 +60,16 @@
       <DependentUpon>frmContentView.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
+    <Compile Include="Models\FolderReaderFromSystem.cs" />
     <Compile Include="Models\IDataCompare.cs" />
+    <Compile Include="Models\IFolderReader.cs" />
+    <Compile Include="Models\IPFile.cs" />
     <Compile Include="Models\ISqlReader.cs" />
     <Compile Include="Models\IUnique.cs" />
+    <Compile Include="Models\PFile.cs" />
+    <Compile Include="Models\PFolder.cs" />
+    <Compile Include="Models\PFolderCompareResult.cs" />
+    <Compile Include="Models\PHashFile.cs" />
     <Compile Include="Models\SqlConstraintKey.cs" />
     <Compile Include="Models\SqlConstraintKeyType.cs" />
     <Compile Include="Models\SqlDatabaseCompareResult.cs" />

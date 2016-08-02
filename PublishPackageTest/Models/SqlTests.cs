@@ -157,9 +157,9 @@ GO
         [TestMethod]
         public void SqlForeignKeyGetDropScriptTest()
         {
-            var key = new SqlForeignKey { KeyName = "FK_Table1_Table2", KeyColumnName = "Id", ForeignTableName = "Table2", ForeignColumnName = "Id" };
+            var key = new SqlForeignKey { TableName= "Table1",KeyName = "FK_Table1_Table2", KeyColumnName = "Id", ForeignTableName = "Table2", ForeignColumnName = "Id" };
 
-            Assert.AreEqual("ALTER TABLE [Table1] DROP CONSTRAINT [FK_Table1_Table2]\r\nGO\r\n\r\n", key.GetDropScript("Table1"));
+            Assert.AreEqual("ALTER TABLE [Table1] DROP CONSTRAINT [FK_Table1_Table2]\r\nGO\r\n\r\n", key.GetDropScript());
         }
 
         #endregion

@@ -74,6 +74,13 @@ namespace PublishPackage
             return sBuilder.ToString();
         }
 
+        /// <summary>
+        /// Compare two set
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list1">New list</param>
+        /// <param name="list2">Old list</param>
+        /// <returns></returns>
         public static List<DataCompareResult<T>> GetCompareResult<T>(List<IDataCompare> list1, List<IDataCompare> list2) where T : IDataCompare
         {
             List<DataCompareResult<T>> result = new List<DataCompareResult<T>>();
