@@ -143,7 +143,7 @@ GO
         [TestMethod]
         public void SqlForeignKeyGetScriptTest()
         {
-            var key = new SqlForeignKey { KeyName = "FK_Table1_Table2", KeyColumnName = "Id", ForeignTableName = "Table2", ForeignColumnName = "Id" };
+            var key = new SqlForeignKey { TableName="Table1", KeyName = "FK_Table1_Table2", KeyColumnName = "Id", ForeignTableName = "Table2", ForeignColumnName = "Id" };
 
             Assert.AreEqual(@"ALTER TABLE [Table1] WITH CHECK ADD CONSTRAINT [FK_Table1_Table2] FOREIGN KEY ([Id]) REFERENCES [Table2] ([Id])
 GO
@@ -151,7 +151,7 @@ GO
 ALTER TABLE [Table1] CHECK CONSTRAINT [FK_Table1_Table2]
 GO
 
-", key.GetScript("Table1"));
+", key.GetScript());
         }
 
         [TestMethod]
@@ -217,8 +217,8 @@ GO
 
             var foreignKey1 = new Mock<SqlForeignKey>();
             var foreignKey2 = new Mock<SqlForeignKey>();
-            foreignKey1.Setup(x => x.GetScript(It.IsAny<string>())).Returns("FOREIGNKEY1\r\nGO\r\n\r\n");
-            foreignKey2.Setup(x => x.GetScript(It.IsAny<string>())).Returns("FOREIGNKEY2\r\nGO\r\n\r\n");
+            foreignKey1.Setup(x => x.GetScript()).Returns("FOREIGNKEY1\r\nGO\r\n\r\n");
+            foreignKey2.Setup(x => x.GetScript()).Returns("FOREIGNKEY2\r\nGO\r\n\r\n");
 
             table.ForeignKeys.Add(foreignKey1.Object);
             table.ForeignKeys.Add(foreignKey2.Object);
