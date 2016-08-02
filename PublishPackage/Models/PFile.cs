@@ -11,6 +11,7 @@ namespace PublishPackage.Models
     {
         public string FileName { get; set; }
         public string FilePath { get; set; }
+        public string RelativePath { get; set; }
         public string Hash { get; set; }
         public string KeyName
         {
@@ -36,6 +37,11 @@ namespace PublishPackage.Models
         public string GetScript()
         {
             return File.ReadAllText(this.FilePath);
+        }
+
+        public override string ToString()
+        {
+            return this.FileName;
         }
     }
 }

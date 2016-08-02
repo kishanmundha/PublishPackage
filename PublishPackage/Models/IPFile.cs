@@ -10,5 +10,6 @@ namespace PublishPackage.Models
     {
         string FileName { get; set; }
         string FilePath { get; set; }
+        string RelativePath { get; set; }
     }
 }

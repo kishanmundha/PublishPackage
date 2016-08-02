@@ -17,6 +17,24 @@ namespace PublishPackage.Models
             this.Files = new List<DataCompareResult<IPFile>>();
         }
 
+        private List<string> GetFolderNewScript(PFolder folder)
+        {
+            List<string> scriptList = new List<string>();
+            scriptList.Add("$NEW     | FOLDER | " + folder.RelativePath);
+
+            foreach(var file in folder.Files)
+            {
+                scriptList.Add("$NEW     | FILE   | " + (file as IPFile).RelativePath);
+            }
+
+            foreach(var fld in folder.Folders)
+            {
+                scriptList.AddRange(GetFolderNewScript(fld));
+            }
+
+            return scriptList;
+        }
+
         public string GetScript()
         {
             List<string> scriptList = new List<string>();
@@ -25,17 +43,17 @@ namespace PublishPackage.Models
                 switch(file.Status)
                 {
                     case DataCompareStatus.New:
-                        scriptList.Add("$NEW | FILE | " + file.NewData.FilePath);
+                        scriptList.Add("$NEW     | FILE   | " + file.NewData.RelativePath);
                         break;
                     case DataCompareStatus.Modified:
                         // compare sub directory
-                        scriptList.Add("$NEW | REPLACE | " + file.NewData.FilePath);
+                        scriptList.Add("$REPLACE | FILE   | " + file.NewData.RelativePath);
                         break;
                     case DataCompareStatus.Renamed:
-                        scriptList.Add("$RENAME | FILE | " + file.NewData.FilePath + " | " + file.OldData.FilePath);
+                        scriptList.Add("$RENAME  | FILE   | " + file.NewData.RelativePath + " | " + file.OldData.RelativePath);
                         break;
                     case DataCompareStatus.Deleted:
-                        scriptList.Add("$DELETE | FILE | " + file.OldData.FilePath);
+                        scriptList.Add("$DELETE  | FILE   | " + file.OldData.RelativePath);
                         break;
                 }
             }
@@ -45,7 +63,8 @@ namespace PublishPackage.Models
                 switch (folder.Status)
                 {
                     case DataCompareStatus.New:
-                        scriptList.Add("$NEW | FOLDER | " + folder.NewData.FolderPath);
+                        scriptList.AddRange(GetFolderNewScript(folder.NewData));
+                        //scriptList.Add("$NEW     | FOLDER | " + folder.NewData.RelativePath);
                         break;
                     case DataCompareStatus.Modified:
                         // compare sub directory
@@ -53,10 +72,10 @@ namespace PublishPackage.Models
                         scriptList.Add(folderCompareResult.GetScript());
                         break;
                     case DataCompareStatus.Renamed:
-                        scriptList.Add("$RENAME | FOLDER | " + folder.NewData.FolderPath);
+                        scriptList.Add("$RENAME  | FOLDER | " + folder.NewData.RelativePath);
                         break;
                     case DataCompareStatus.Deleted:
-                        scriptList.Add("$DELETE | FOLDER | " + folder.OldData.FolderPath);
+                        scriptList.Add("$DELETE  | FOLDER | " + folder.OldData.RelativePath);
                         break;
                 }
             }

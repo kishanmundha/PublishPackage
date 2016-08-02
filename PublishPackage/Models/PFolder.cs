@@ -10,6 +10,7 @@ namespace PublishPackage.Models
     {
         public string FolderName { get; set; }
         public string FolderPath { get; set; }
+        public string RelativePath { get; set; }
         public PFolder()
         {
             this.Files = new List<IDataCompare>();
@@ -28,7 +29,7 @@ namespace PublishPackage.Models
         {
             get
             {
-                return Helper.GetMD5Hash(string.Join("", this.Files.Select(x => x.MD5Hash)));
+                return Helper.GetMD5Hash(string.Join("", this.Files.Select(x => x.MD5Hash)) + string.Join("", this.Folders.Select(x=>x.MD5Hash)));
             }
         }
 
@@ -39,5 +40,10 @@ namespace PublishPackage.Models
 
         public List<IDataCompare> Files { get; set; }
         public List<PFolder> Folders { get; set; }
+
+        public override string ToString()
+        {
+            return this.FolderName;
+        }
     }
 }

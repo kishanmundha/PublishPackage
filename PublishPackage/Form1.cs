@@ -40,8 +40,8 @@ namespace PublishPackage
         private void button2_Click(object sender, EventArgs e)
         {
             IFolderReader reader = new FolderReaderFromSystem();
-            var folder1 = reader.Get(@"E:\temp\temp\temp1");
-            var folder2 = reader.Get(@"E:\temp\temp\temp2");
+            var folder1 = reader.Get(@"E:\temp\BookMyFood\");
+            var folder2 = reader.Get(@"E:\temp2\BookMyFood\");
 
             var folderCompare = PFolderCompareResult.Compare(folder1, folder2);
 

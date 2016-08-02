@@ -11,6 +11,11 @@ namespace PublishPackage.Models
     {
         public PFolder Get(string source)
         {
+            return Get(source, source);
+        }
+
+        private PFolder Get(string source, string fixPath)
+        {
             var directories = Directory.GetDirectories(source);
             var files = Directory.GetFiles(source);
 
@@ -19,13 +24,15 @@ namespace PublishPackage.Models
             DirectoryInfo sdi = new DirectoryInfo(source);
             folder.FolderPath = sdi.FullName;
             folder.FolderName = sdi.Name;
+            folder.RelativePath = sdi.FullName.Replace(fixPath, "");
 
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 PFile pFile = new PFile();
                 FileInfo fi = new FileInfo(file);
                 pFile.FileName = fi.Name;
                 pFile.FilePath = fi.FullName;
+                pFile.RelativePath = fi.FullName.Replace(fixPath, "");
 
                 folder.Files.Add(pFile);
             }
@@ -37,7 +44,7 @@ namespace PublishPackage.Models
                 //pFolder.FolderName = di.Name;
                 //pFolder.FolderPath = di.FullName;
 
-                PFolder pFolder = Get(fld);
+                PFolder pFolder = Get(fld, fixPath);
 
                 folder.Folders.Add(pFolder);
             }
