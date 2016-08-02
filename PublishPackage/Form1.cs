@@ -33,6 +33,22 @@ namespace PublishPackage
             var str = dbCompare.GetScript();
 
             var frm = new frmContentView("DB Script", str);
+
+            frm.ShowDialog();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            IFolderReader reader = new FolderReaderFromSystem();
+            var folder1 = reader.Get(@"E:\temp\temp\temp1");
+            var folder2 = reader.Get(@"E:\temp\temp\temp2");
+
+            var folderCompare = PFolderCompareResult.Compare(folder1, folder2);
+
+            var str = folderCompare.GetScript();
+
+            var frm = new frmContentView("FOLDER Compare Script", str);
+
             frm.ShowDialog();
         }
     }
