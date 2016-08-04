@@ -64,6 +64,7 @@
     <Compile Include="Models\IDataCompare.cs" />
     <Compile Include="Models\IFolderReader.cs" />
     <Compile Include="Models\IPFile.cs" />
+    <Compile Include="Models\IProfile.cs" />
     <Compile Include="Models\ISqlReader.cs" />
     <Compile Include="Models\IUnique.cs" />
     <Compile Include="Models\PFile.cs" />
