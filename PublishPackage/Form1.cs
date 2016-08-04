@@ -54,7 +54,7 @@ namespace PublishPackage
 
         private void button3_Click(object sender, EventArgs e)
         {
-            (new Forms.frm1()).Show();
+            (new Form2()).Show();
         }
     }
 }
