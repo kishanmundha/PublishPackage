@@ -51,5 +51,10 @@ namespace PublishPackage
 
             frm.ShowDialog();
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            (new Forms.frm1()).Show();
+        }
     }
 }
