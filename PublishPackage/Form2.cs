@@ -15,7 +15,7 @@ namespace PublishPackage
         Panel panel;
         Panel CurrentPanel;
         Models.IOperationStep operation;
-        System.Threading.Thread nextAnimation;
+        System.Threading.Thread panelSlide;
 
         List<Panel> PanelSteps = new List<Panel>();
 
@@ -84,18 +84,22 @@ namespace PublishPackage
             if(CurrentPanel != null)
             {
                 CurrentPanel.Left -= CurrentPanel.Width;
+                CurrentPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom;
             }
 
             Panel panel = operation.GetComponent();
             panel.Width = this.Width;
             panel.Height = this.Height - panel1.Height;
             panel.Left = 0;
+            panel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right;
 
             this.Controls.Add(panel);
 
             PanelSteps.Add(panel);
 
             CurrentPanel = panel;
+
+            operation.Start();
         }
 
         private void Previous()
@@ -110,6 +114,7 @@ namespace PublishPackage
             operation = operation.PreviousStep;
 
             CurrentPanel.Left = 0;
+            CurrentPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right;
         }
 
 

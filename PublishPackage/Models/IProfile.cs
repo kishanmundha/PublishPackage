@@ -55,10 +55,6 @@ namespace PublishPackage.Models
     public interface IOperationStep
     {
         IOperationStep PreviousStep { get; set; }
-        IOperationStep NextStep { get; set; }
-
-        void Open(IOperationStep PreviousStep, object data);
-        bool GoNext();
 
         bool CanClose { get; set; }
         void Start();
@@ -81,19 +77,6 @@ namespace PublishPackage.Models
 
     public class ProfileSelect : IOperationStep
     {
-        public IOperationStep NextStep
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public IOperationStep PreviousStep
         {
             get
@@ -109,21 +92,9 @@ namespace PublishPackage.Models
 
         public event EventHandler OnComplete;
 
-        public bool GoNext()
-        {
-            if (NextStep != null)
-                NextStep.Open(this, null);
-            throw new NotImplementedException();
-        }
-
-        public void Open(IOperationStep PreviousStep, object data)
-        {
-            this.PreviousStep = PreviousStep;
-        }
-
         public void Start()
         {
-            throw new NotImplementedException();
+            
         }
 
         public Panel GetComponent()
@@ -210,8 +181,6 @@ namespace PublishPackage.Models
     {
         public bool CanClose { get; set; }
 
-        public IOperationStep NextStep { get; set; }
-
         public IOperationStep PreviousStep { get; set; }
 
         public event EventHandler OnComplete;
@@ -242,19 +211,9 @@ namespace PublishPackage.Models
             return panel;
         }
 
-        public bool GoNext()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Open(IOperationStep PreviousStep, object data)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Start()
         {
-            throw new NotImplementedException();
+            
         }
 
 
@@ -267,8 +226,6 @@ namespace PublishPackage.Models
     public class OptionSelect : IOperationStep
     {
         public bool CanClose { get; set; }
-
-        public IOperationStep NextStep { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
 
@@ -315,19 +272,9 @@ namespace PublishPackage.Models
             return panel;
         }
 
-        public bool GoNext()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Open(IOperationStep PreviousStep, object data)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Start()
         {
-            throw new NotImplementedException();
+            
         }
 
 
@@ -339,9 +286,8 @@ namespace PublishPackage.Models
 
     public class ExecuteOperation : IOperationStep
     {
+        System.ComponentModel.BackgroundWorker bg;
         public bool CanClose { get; set; }
-
-        public IOperationStep NextStep { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
 
@@ -352,7 +298,7 @@ namespace PublishPackage.Models
             ProgressPanel p = new ProgressPanel();
             Panel panel = p.GetComponent();
 
-            System.ComponentModel.BackgroundWorker bg = new System.ComponentModel.BackgroundWorker();
+            bg = new System.ComponentModel.BackgroundWorker();
             bg.DoWork += (s, e) =>
             {
                 int a = 0;
@@ -381,24 +327,12 @@ namespace PublishPackage.Models
 
             bg.WorkerReportsProgress = true;
 
-            bg.RunWorkerAsync();
-
             return panel;
-        }
-
-        public bool GoNext()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Open(IOperationStep PreviousStep, object data)
-        {
-            throw new NotImplementedException();
         }
 
         public void Start()
         {
-            throw new NotImplementedException();
+            bg.RunWorkerAsync();
         }
 
         public IOperationStep GetNextInstance()
@@ -410,8 +344,6 @@ namespace PublishPackage.Models
     public class ShowCompareResult : IOperationStep
     {
         public bool CanClose { get; set; }
-
-        public IOperationStep NextStep { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
 
@@ -431,19 +363,9 @@ namespace PublishPackage.Models
             throw new NotImplementedException();
         }
 
-        public bool GoNext()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Open(IOperationStep PreviousStep, object data)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Start()
         {
-            throw new NotImplementedException();
+            
         }
     }
 
@@ -505,20 +427,20 @@ namespace PublishPackage.Models
     {
         public void run()
         {
-            ProfileSelect ps = new ProfileSelect();
-            ps.Profile = new ArchiveProfile();
+            //ProfileSelect ps = new ProfileSelect();
+            //ps.Profile = new ArchiveProfile();
 
-            var vs = new VersionSelect();
-            ps.NextStep = vs;
-            ps.NextStep.Open(ps, ps.Profile);
+            //var vs = new VersionSelect();
+            //ps.NextStep = vs;
+            //ps.NextStep.Open(ps, ps.Profile);
 
-            var os = new OptionSelect();
-            vs.NextStep = os;
-            os.Open(vs, null);
+            //var os = new OptionSelect();
+            //vs.NextStep = os;
+            //os.Open(vs, null);
 
-            var es = new ExecuteOperation();
-            os.NextStep = es;
-            es.Open(os, null);
+            //var es = new ExecuteOperation();
+            //os.NextStep = es;
+            //es.Open(os, null);
         }
     }
 }
