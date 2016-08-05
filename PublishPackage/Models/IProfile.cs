@@ -147,7 +147,8 @@ namespace PublishPackage.Models
 
             panel.Controls.Add(rtb);
 
-            cbx.SelectedValueChanged += (s, e) => {
+            cbx.SelectedValueChanged += (s, e) =>
+            {
                 rtb.Text = ((s as ComboBox).SelectedValue as IProfile).InfoString;
             };
 
@@ -313,7 +314,7 @@ namespace PublishPackage.Models
 
         public IOperationStep GetNextInstance()
         {
-            throw new NotImplementedException();
+            return new ExecuteOperation();
         }
     }
 
@@ -327,7 +328,35 @@ namespace PublishPackage.Models
 
         public Panel GetComponent()
         {
-            throw new NotImplementedException();
+            ProgressPanel p = new ProgressPanel();
+            Panel panel = p.GetComponent();
+
+            System.ComponentModel.BackgroundWorker bg = new System.ComponentModel.BackgroundWorker();
+            bg.DoWork += (s, e) =>
+            {
+                int a = 0;
+                for (var i = 0; i < 10000; i++)
+                {
+                    for (var j = 0; j < 1000000; j++)
+                        a++;
+
+                    //p.Update((i * 100) / 10000);
+                    bg.ReportProgress((i * 100) / 10000);
+                }
+
+                bg.ReportProgress(100);
+            };
+
+            bg.ProgressChanged += (s, e) =>
+            {
+                p.Update(e.ProgressPercentage);
+            };
+
+            bg.WorkerReportsProgress = true;
+
+            bg.RunWorkerAsync();
+
+            return panel;
         }
 
         public bool GoNext()
@@ -349,6 +378,60 @@ namespace PublishPackage.Models
         public IOperationStep GetNextInstance()
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class ProgressPanel
+    {
+        private ProgressBar progressBar;
+        private Label statusLabel;
+        public Panel GetComponent()
+        {
+            Panel panel = new Panel();
+            panel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            //panel.BorderStyle = BorderStyle.FixedSingle;
+
+            Label lbl = new Label();
+            statusLabel = lbl;
+            lbl.Text = "Progress";
+            lbl.Top = 80;
+            lbl.Left = 10;
+
+            panel.Controls.Add(lbl);
+
+            ProgressBar pb = new ProgressBar();
+            progressBar = pb;
+            pb.Top = 120;
+            pb.Left = 10;
+            pb.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pb.Width = panel.Width - 40;
+
+            panel.Controls.Add(pb);
+
+            return panel;
+        }
+
+        private void SetProgress(int p)
+        {
+            //if (progressBar.InvokeRequired)
+            //    progressBar.Invoke(() => { progressBar.Value = Math.Min(Math.Max(p, 0), 100); });
+            //else
+                progressBar.Value = Math.Min(Math.Max(p, 0), 100);
+        }
+
+        public void Update(int p)
+        {
+            SetProgress(p);
+        }
+
+        public void Update(string msg)
+        {
+
+        }
+
+        public void Update(int p, string msg)
+        {
+
         }
     }
 
