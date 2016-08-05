@@ -13,7 +13,12 @@ namespace PublishPackage
     public partial class Form2 : Form
     {
         Panel panel;
+        Panel CurrentPanel;
         Models.IOperationStep operation;
+        System.Threading.Thread nextAnimation;
+
+        List<Panel> PanelSteps = new List<Panel>();
+
         public Form2()
         {
             InitializeComponent();
@@ -21,12 +26,16 @@ namespace PublishPackage
 
         private void Form2_Load(object sender, EventArgs e)
         {
-            operation = new Models.ProfileSelect();
-            panel = operation.GetComponent();
-            panel.Width = this.Width;
-            panel.Height = this.Height - panel1.Height;
+            //nextAnimation = new System.Threading.Thread(() => {
+            //});
 
-            this.Controls.Add(panel);
+            operation = new Models.ProfileSelect();
+            Next();
+            //panel = operation.GetComponent();
+            //panel.Width = this.Width;
+            //panel.Height = this.Height - panel1.Height;
+
+            //this.Controls.Add(panel);
         }
 
         private void Form2_SizeChanged(object sender, EventArgs e)
@@ -40,19 +49,62 @@ namespace PublishPackage
             {
                 var NextOperation = operation.GetNextInstance();
                 NextOperation.PreviousStep = operation;
-                this.Controls.Remove(panel);
+                //this.Controls.Remove(panel);
 
                 operation = NextOperation;
-                panel = operation.GetComponent();
-                panel.Width = this.Width;
-                panel.Height = this.Height - panel1.Height;
+                Next();
+                //panel = operation.GetComponent();
+                //panel.Width = this.Width;
+                //panel.Height = this.Height - panel1.Height;
 
-                this.Controls.Add(panel);
+                //this.Controls.Add(panel);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Previous();
+        }
+
+        #region Helper
+        private void Next()
+        {
+            if(CurrentPanel != null)
+            {
+                CurrentPanel.Left -= CurrentPanel.Width;
+            }
+
+            Panel panel = operation.GetComponent();
+            panel.Width = this.Width;
+            panel.Height = this.Height - panel1.Height;
+            panel.Left = 0;
+
+            this.Controls.Add(panel);
+
+            PanelSteps.Add(panel);
+
+            CurrentPanel = panel;
+        }
+
+        private void Previous()
+        {
+            if (PanelSteps.Count == 1)
+                return;
+
+            this.Controls.Remove(CurrentPanel);
+            PanelSteps.Remove(PanelSteps.Last());
+
+            CurrentPanel = PanelSteps.Last();
+            operation = operation.PreviousStep;
+
+            CurrentPanel.Left = 0;
+        }
+
+
+        #endregion
     }
 }
