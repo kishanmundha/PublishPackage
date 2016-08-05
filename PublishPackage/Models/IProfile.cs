@@ -64,6 +64,8 @@ namespace PublishPackage.Models
         void Start();
         Panel GetComponent();
         IOperationStep GetNextInstance();
+
+        event EventHandler OnComplete;
     }
 
     /*
@@ -104,6 +106,8 @@ namespace PublishPackage.Models
                 throw new NotImplementedException();
             }
         }
+
+        public event EventHandler OnComplete;
 
         public bool GoNext()
         {
@@ -210,6 +214,8 @@ namespace PublishPackage.Models
 
         public IOperationStep PreviousStep { get; set; }
 
+        public event EventHandler OnComplete;
+
         public Panel GetComponent()
         {
             Panel panel = new Panel();
@@ -265,6 +271,8 @@ namespace PublishPackage.Models
         public IOperationStep NextStep { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
+
+        public event EventHandler OnComplete;
 
         public Panel GetComponent()
         {
@@ -337,6 +345,8 @@ namespace PublishPackage.Models
 
         public IOperationStep PreviousStep { get; set; }
 
+        public event EventHandler OnComplete;
+
         public Panel GetComponent()
         {
             ProgressPanel p = new ProgressPanel();
@@ -348,7 +358,7 @@ namespace PublishPackage.Models
                 int a = 0;
                 for (var i = 0; i < 10000; i++)
                 {
-                    for (var j = 0; j < 1000000; j++)
+                    for (var j = 0; j < 100000; j++)
                         a++;
 
                     //p.Update((i * 100) / 10000);
@@ -361,6 +371,12 @@ namespace PublishPackage.Models
             bg.ProgressChanged += (s, e) =>
             {
                 p.Update(e.ProgressPercentage);
+            };
+
+            bg.RunWorkerCompleted += (s, e) =>
+            {
+                if (this.OnComplete != null)
+                    this.OnComplete(this, null);
             };
 
             bg.WorkerReportsProgress = true;
@@ -385,8 +401,47 @@ namespace PublishPackage.Models
             throw new NotImplementedException();
         }
 
+        public IOperationStep GetNextInstance()
+        {
+            return new ShowCompareResult();
+        }
+    }
+
+    public class ShowCompareResult : IOperationStep
+    {
+        public bool CanClose { get; set; }
+
+        public IOperationStep NextStep { get; set; }
+
+        public IOperationStep PreviousStep { get; set; }
+
+        public event EventHandler OnComplete;
+
+        public Panel GetComponent()
+        {
+            Panel panel = new Panel();
+            panel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            //panel.BorderStyle = BorderStyle.FixedSingle;
+
+            return panel;
+        }
 
         public IOperationStep GetNextInstance()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GoNext()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Open(IOperationStep PreviousStep, object data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Start()
         {
             throw new NotImplementedException();
         }

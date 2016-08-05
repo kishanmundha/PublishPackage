@@ -47,17 +47,7 @@ namespace PublishPackage
         {
             try
             {
-                var NextOperation = operation.GetNextInstance();
-                NextOperation.PreviousStep = operation;
-                //this.Controls.Remove(panel);
-
-                operation = NextOperation;
-                Next();
-                //panel = operation.GetComponent();
-                //panel.Width = this.Width;
-                //panel.Height = this.Height - panel1.Height;
-
-                //this.Controls.Add(panel);
+                AutoNext();
             }
             catch (Exception ex)
             {
@@ -71,6 +61,24 @@ namespace PublishPackage
         }
 
         #region Helper
+
+        private void RegisterEvents()
+        {
+            operation.OnComplete += (s, e) =>
+            {
+                AutoNext();
+            };
+        }
+
+        private void AutoNext()
+        {
+            var NextOperation = operation.GetNextInstance();
+            NextOperation.PreviousStep = operation;
+            operation = NextOperation;
+            RegisterEvents();
+            Next();
+        }
+
         private void Next()
         {
             if(CurrentPanel != null)
