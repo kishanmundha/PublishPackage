@@ -66,6 +66,17 @@ namespace PublishPackage.Models
         IOperationStep GetNextInstance();
     }
 
+    /*
+     * * Make archive *
+     *
+     * Select profile
+     * Select Last version
+     * Version Name and options
+     * ProgressBar - Extract Last version files to temp1, Copy Published code and db generated script to temp2, get compare result
+     * Show compare result (link for map renamed result)
+     * ProgressBar - Make arcvhie
+     */
+
     public class ProfileSelect : IOperationStep
     {
         public IOperationStep NextStep
