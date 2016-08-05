@@ -44,6 +44,7 @@ namespace PublishPackage.Models
         bool CanClose { get; set; }
         void Start();
         Panel GetComponent();
+        IOperationStep GetNextInstance();
     }
 
     public class ProfileSelect : IOperationStep
@@ -123,6 +124,12 @@ namespace PublishPackage.Models
                 throw new NotImplementedException();
             }
         }
+
+
+        public IOperationStep GetNextInstance()
+        {
+            return new VersionSelect();
+        }
     }
 
     public class VersionSelect : IOperationStep
@@ -153,22 +160,14 @@ namespace PublishPackage.Models
             }
         }
 
-        public IOperationStep PreviousStep
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public IOperationStep PreviousStep { get; set; }
 
         public Panel GetComponent()
         {
-            throw new NotImplementedException();
+            Panel panel = new Panel();
+            panel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            return panel;
         }
 
         public bool GoNext()
@@ -182,6 +181,12 @@ namespace PublishPackage.Models
         }
 
         public void Start()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public IOperationStep GetNextInstance()
         {
             throw new NotImplementedException();
         }
@@ -247,6 +252,12 @@ namespace PublishPackage.Models
         {
             throw new NotImplementedException();
         }
+
+
+        public IOperationStep GetNextInstance()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class ExecuteOperation : IOperationStep
@@ -306,6 +317,12 @@ namespace PublishPackage.Models
         }
 
         public void Start()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public IOperationStep GetNextInstance()
         {
             throw new NotImplementedException();
         }
