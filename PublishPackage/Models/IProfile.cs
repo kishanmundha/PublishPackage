@@ -214,6 +214,7 @@ namespace PublishPackage.Models
 
     public class VersionSelect : IOperationStep
     {
+        ComboBox cbx;
         public bool CanClose { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
@@ -235,13 +236,17 @@ namespace PublishPackage.Models
 
             panel.Controls.Add(lbl);
 
-            ComboBox cbx = new ComboBox();
+            cbx = new ComboBox();
             cbx.Name = "Combo1";
             cbx.Left = 10;
             cbx.Top = 60;
             cbx.Width = panel.Width - 40;
             cbx.DropDownStyle = ComboBoxStyle.DropDownList;
             cbx.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            cbx.DataSource = this.GetVersionList();
+            cbx.DisplayMember = "VersionName";
+            cbx.ValueMember = "Path";
 
             panel.Controls.Add(cbx);
 
@@ -253,12 +258,33 @@ namespace PublishPackage.Models
             
         }
 
+        private System.Data.DataTable GetVersionList()
+        {
+            System.Data.DataTable dt = new System.Data.DataTable();
+            dt.Columns.Add("VersionName");
+            dt.Columns.Add("Path");
+
+            string VersionFolderPath = this.data.VersionFolderPath;
+
+            var files = Directory.GetFiles(VersionFolderPath, "*.zip");
+
+            foreach(var f in files)
+            {
+                FileInfo fi = new FileInfo(f);
+
+                dt.Rows.Add(fi.Name.Replace(fi.Extension, ""), fi.FullName);
+            }
+
+            return dt;
+        }
+
 
         public IOperationStep GetNextInstance()
         {
             var obj = new OptionSelect();
 
             obj.data = this.data;
+            obj.data.LastVersionFile = (cbx.SelectedValue as string);
 
             return obj;
         }
@@ -402,7 +428,22 @@ namespace PublishPackage.Models
                 System.IO.Directory.CreateDirectory(tempDirectory);
 
                 var sourcePath = this.data.SourcePath;
-                var targetpath = tempDirectory + "\\code";
+
+                var tempOldPath = tempDirectory + "\\old";
+
+                bool LastVersionSelected = false;
+                if(this.data.LastVersionFile != null)
+                {
+                    Directory.CreateDirectory(tempOldPath);
+                    System.IO.Compression.ZipFile.ExtractToDirectory(this.data.LastVersionFile, tempOldPath);
+                    LastVersionSelected = true;
+                }
+
+                var tempNewpath = tempDirectory + "\\current";
+
+                Directory.CreateDirectory(tempNewpath);
+
+                var targetpath = tempNewpath + "\\code";
 
                 Directory.CreateDirectory(targetpath);
 
@@ -424,11 +465,22 @@ namespace PublishPackage.Models
                 file.Close();
 
                 IFolderReader fReader = new FolderReaderFromSystem();
-                var folder1 = fReader.Get(targetpath);
+                var folder2 = fReader.Get(targetpath);
 
-                var folderCompare = PFolderCompareResult.Compare(null, folder1);
+                PFolder folder1 = null;
+                SqlDatabase databaseOld = null;
 
-                var dbCompare = SqlDatabaseCompareResult.Compare(null, database);
+                if(LastVersionSelected)
+                {
+                    folder1 = fReader.Get(tempOldPath + "\\code");
+
+                    ISqlReader reader2 = new SqlReaderByJson();
+                    databaseOld = reader2.Get(tempOldPath + "\\db\\script.json");
+                }
+
+                var folderCompare = PFolderCompareResult.Compare(folder1, folder2);
+
+                var dbCompare = SqlDatabaseCompareResult.Compare(databaseOld, database);
 
                 var comparePath = tempDirectory + "\\compareResult";
 
