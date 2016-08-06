@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,9 +35,9 @@ namespace PublishPackage.Models
         {
             get
             {
-                return "Profile Name : " + ProfileName + "\r\n"
-                    + "Source Path : " + SourcePath + "\r\n"
-                    + "Source DB : " + SourceDBPath + "\r\n"
+                return "Profile Name : " + ProfileName + "\r\n\r\n"
+                    + "Source Path : " + SourcePath + "\r\n\r\n"
+                    + "Source DB : " + SourceDBPath + "\r\n\r\n"
                     + "VersionFolder Path : " + VersionFolderPath;
             }
         }
@@ -55,6 +57,7 @@ namespace PublishPackage.Models
     public interface IOperationStep
     {
         IOperationStep PreviousStep { get; set; }
+        dynamic data { get; set; }
 
         bool CanClose { get; set; }
         void Start();
@@ -77,6 +80,7 @@ namespace PublishPackage.Models
 
     public class ProfileSelect : IOperationStep
     {
+        ComboBox cbx;
         public IOperationStep PreviousStep
         {
             get
@@ -94,7 +98,6 @@ namespace PublishPackage.Models
 
         public void Start()
         {
-            
         }
 
         public Panel GetComponent()
@@ -110,7 +113,7 @@ namespace PublishPackage.Models
 
             panel.Controls.Add(lbl);
 
-            ComboBox cbx = new ComboBox();
+            cbx = new ComboBox();
             cbx.Name = "Combo1";
             cbx.Left = 10;
             cbx.Top = 60;
@@ -156,22 +159,54 @@ namespace PublishPackage.Models
             }
         }
 
+        public dynamic data { get; set; }
+
         public IOperationStep GetNextInstance()
         {
-            return new VersionSelect();
+            var obj = new VersionSelect();
+
+            var p = (cbx.SelectedValue as ArchiveProfile);
+            obj.data = new ExpandoObject();
+            obj.data.ProfileName = p.ProfileName;
+            obj.data.SourcePath = p.SourcePath;
+            obj.data.SourceDBPath = p.SourceDBPath;
+            obj.data.VersionFolderPath = p.VersionFolderPath;
+            return obj;
         }
 
         private List<IProfile> GetProfileList()
         {
             List<IProfile> list = new List<IProfile>();
 
-            var profile = new ArchiveProfile();
-            profile.ProfileName = "Test profile";
-            list.Add(profile);
+            string dir = System.IO.Directory.GetCurrentDirectory() + "\\Profiles";
 
-            var profile2 = new ArchiveProfile();
-            profile2.ProfileName = "Test profile 2";
-            list.Add(profile2);
+            var files = System.IO.Directory.GetFiles(dir, "*.json");
+
+            foreach(var file in files)
+            {
+                try
+                {
+                    dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(System.IO.File.ReadAllText(file));
+
+                    if (obj == null)
+                        continue;
+
+                    if(obj.profileType == "Archive")
+                    {
+                        var p = new ArchiveProfile();
+                        p.ProfileName = obj.profileName;
+                        p.SourcePath = obj.sourcePath;
+                        p.SourceDBPath = obj.sourceDBPath;
+                        p.VersionFolderPath = obj.versionFolderPath;
+
+                        list.Add(p);
+                    }
+                }
+                catch
+                {
+
+                }
+            }
 
             return list;
         }
@@ -182,6 +217,8 @@ namespace PublishPackage.Models
         public bool CanClose { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
+
+        public dynamic data { get; set; }
 
         public event EventHandler OnComplete;
 
@@ -219,15 +256,22 @@ namespace PublishPackage.Models
 
         public IOperationStep GetNextInstance()
         {
-            return new OptionSelect();
+            var obj = new OptionSelect();
+
+            obj.data = this.data;
+
+            return obj;
         }
     }
 
     public class OptionSelect : IOperationStep
     {
+        TextBox txtBox;
         public bool CanClose { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
+
+        public dynamic data { get; set; }
 
         public event EventHandler OnComplete;
 
@@ -267,6 +311,13 @@ namespace PublishPackage.Models
             checkBox2.Text = "checkBox2";
             checkBox2.UseVisualStyleBackColor = true;
 
+            txtBox = new TextBox();
+            txtBox.Location = new System.Drawing.Point(10, 80);
+            txtBox.Name = "Name";
+            txtBox.Size = new System.Drawing.Size(98, 21);
+
+            groupBox1.Controls.Add(txtBox);
+
             panel.Controls.Add(groupBox1);
 
             return panel;
@@ -280,7 +331,12 @@ namespace PublishPackage.Models
 
         public IOperationStep GetNextInstance()
         {
-            return new ExecuteOperation();
+            var obj  = new ExecuteOperation();
+
+            obj.data = this.data;
+            obj.data.VersionName = txtBox.Text;
+
+            return obj;
         }
     }
 
@@ -291,7 +347,47 @@ namespace PublishPackage.Models
 
         public IOperationStep PreviousStep { get; set; }
 
+        public dynamic data { get; set; }
+
         public event EventHandler OnComplete;
+
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location.
+            if (copySubDirs)
+            {
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string temppath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, temppath, copySubDirs);
+                }
+            }
+        }
 
         public Panel GetComponent()
         {
@@ -301,15 +397,91 @@ namespace PublishPackage.Models
             bg = new System.ComponentModel.BackgroundWorker();
             bg.DoWork += (s, e) =>
             {
-                int a = 0;
-                for (var i = 0; i < 10000; i++)
-                {
-                    for (var j = 0; j < 100000; j++)
-                        a++;
+                var path = System.IO.Path.GetTempPath();
+                string tempDirectory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+                System.IO.Directory.CreateDirectory(tempDirectory);
 
-                    //p.Update((i * 100) / 10000);
-                    bg.ReportProgress((i * 100) / 10000);
+                var sourcePath = this.data.SourcePath;
+                var targetpath = tempDirectory + "\\code";
+
+                Directory.CreateDirectory(targetpath);
+
+                DirectoryCopy(sourcePath, targetpath, true);
+
+                ISqlReader reader = new SqlReaderByDatabase();
+                SqlDatabase database = reader.Get(this.data.SourceDBPath);
+
+                var str = database.GetJsonString();
+
+                var targetDBPath = tempDirectory + "\\db";
+
+                Directory.CreateDirectory(targetDBPath);
+
+                var file = File.CreateText(targetDBPath + "\\script.json");
+
+                file.Write(str);
+
+                file.Close();
+
+                IFolderReader fReader = new FolderReaderFromSystem();
+                var folder1 = fReader.Get(targetpath);
+
+                var folderCompare = PFolderCompareResult.Compare(null, folder1);
+
+                var dbCompare = SqlDatabaseCompareResult.Compare(null, database);
+
+                var comparePath = tempDirectory + "\\compareResult";
+
+                Directory.CreateDirectory(comparePath);
+
+                file = File.CreateText(comparePath + "\\codeCompareResult.txt");
+                file.Write(folderCompare.GetScript());
+                file.Close();
+
+                var compareDBPath = comparePath + "\\db";
+
+                Directory.CreateDirectory(compareDBPath);
+
+                file = File.CreateText(compareDBPath + "\\script.sql");
+                file.Write(dbCompare.GetScript());
+                file.Close();
+
+                file = File.CreateText(compareDBPath + "\\script.json");
+                file.Write(database.GetJsonString());
+                file.Close();
+
+                var compareTargetpath = comparePath + "\\code";
+
+                Directory.CreateDirectory(compareTargetpath);
+
+                var fileList = folderCompare.GetFileList();
+
+                foreach(var f in fileList)
+                {
+                    var folderName = GetFolderName(compareTargetpath + f);
+                    SafeCreateDirectory(folderName);
+
+                    File.Copy(targetpath + f, compareTargetpath + f, true);
                 }
+
+                string VersionFolderPath = this.data.VersionFolderPath;
+
+                if (!Directory.Exists(VersionFolderPath))
+                    Directory.CreateDirectory(VersionFolderPath);
+
+                System.IO.Compression.ZipFile.CreateFromDirectory(comparePath, VersionFolderPath + "\\" + this.data.VersionName + ".zip");
+
+                Directory.Delete(tempDirectory, true);
+
+                //int a = 0;
+                //for (var i = 0; i < 10000; i++)
+                //{
+                //    for (var j = 0; j < 100000; j++)
+                //        a++;
+
+                //    //p.Update((i * 100) / 10000);
+                //    bg.ReportProgress((i * 100) / 10000);
+                //}
 
                 bg.ReportProgress(100);
             };
@@ -330,6 +502,27 @@ namespace PublishPackage.Models
             return panel;
         }
 
+        private void SafeCreateDirectory(string folderName)
+        {
+            DirectoryInfo di = new DirectoryInfo(folderName);
+
+            if(!di.Exists)
+            {
+                if (!di.Parent.Exists)
+                {
+                    SafeCreateDirectory(di.Parent.Name);
+                }
+
+                Directory.CreateDirectory(folderName);
+            }
+        }
+
+        private string GetFolderName(string f)
+        {
+            FileInfo fi = new FileInfo(f);
+            return fi.DirectoryName;
+        }
+
         public void Start()
         {
             bg.RunWorkerAsync();
@@ -344,6 +537,8 @@ namespace PublishPackage.Models
     public class ShowCompareResult : IOperationStep
     {
         public bool CanClose { get; set; }
+
+        public dynamic data { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
 

@@ -38,7 +38,7 @@ namespace PublishPackage.Models
 
         public string GetDropScript()
         {
-            throw new NotImplementedException();
+            return "DROP VIEW " + this.ViewName + "\r\nGO\r\n\r\n";
         }
     }
 }

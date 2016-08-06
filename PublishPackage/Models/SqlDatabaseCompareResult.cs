@@ -165,9 +165,21 @@ namespace PublishPackage.Models
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="db1">Old</param>
+        /// <param name="db2">New</param>
+        /// <returns></returns>
         public static SqlDatabaseCompareResult Compare(SqlDatabase db1, SqlDatabase db2)
         {
             var result = new SqlDatabaseCompareResult();
+
+            if (db1 == null)
+                db1 = new SqlDatabase();
+
+            if (db2 == null)
+                db2 = new SqlDatabase();
 
             result.Tables.AddRange(Helper.GetCompareResult<SqlTable>(db1.Tables.Cast<IDataCompare>().ToList(), db2.Tables.Cast<IDataCompare>().ToList()));
             result.CheckConstraints.AddRange(Helper.GetCompareResult<SqlCheckConstraint>(db1.CheckConstraints.Cast<IDataCompare>().ToList(), db2.CheckConstraints.Cast<IDataCompare>().ToList()));

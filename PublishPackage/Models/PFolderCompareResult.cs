@@ -83,9 +83,77 @@ namespace PublishPackage.Models
             return string.Join("\r\n", scriptList);
         }
 
+        private List<string> GetFolderNewFileList(PFolder folder)
+        {
+            List<string> list = new List<string>();
+            foreach (var file in folder.Files)
+            {
+                list.Add((file as IPFile).RelativePath);
+            }
+
+            foreach (var fld in folder.Folders)
+            {
+                list.AddRange(GetFolderNewFileList(fld));
+            }
+
+            return list;
+        }
+
+        public List<string> GetFileList()
+        {
+            return GetFileList(this);
+        }
+
+        public List<string> GetFileList(PFolderCompareResult data)
+        {
+            List<string> list = new List<string>();
+
+            foreach (var file in data.Files)
+            {
+                switch (file.Status)
+                {
+                    case DataCompareStatus.New:
+                        list.Add(file.NewData.RelativePath);
+                        break;
+                    case DataCompareStatus.Modified:
+                        list.Add(file.NewData.RelativePath);
+                        break;
+                }
+            }
+
+            foreach (var folder in this.Folders)
+            {
+                switch (folder.Status)
+                {
+                    case DataCompareStatus.New:
+                        list.AddRange(GetFolderNewFileList(folder.NewData));
+                        break;
+                    case DataCompareStatus.Modified:
+                        // compare sub directory
+                        var folderCompareResult = PFolderCompareResult.Compare(folder.NewData, folder.OldData);
+                        list.AddRange(folderCompareResult.GetFileList());
+                        break;
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="folder1">Old Folder</param>
+        /// <param name="folder2">New Folder</param>
+        /// <returns></returns>
         public static PFolderCompareResult Compare(PFolder folder1, PFolder folder2)
         {
             var result = new PFolderCompareResult();
+
+            if (folder1 == null)
+                folder1 = new PFolder();
+
+            if (folder2 == null)
+                folder2 = new PFolder();
 
             result.Folders.AddRange(Helper.GetCompareResult<PFolder>(folder1.Folders.Cast<IDataCompare>().ToList(), folder2.Folders.Cast<IDataCompare>().ToList()));
             result.Files.AddRange(Helper.GetCompareResult<IPFile>(folder1.Files.Cast<IDataCompare>().ToList(), folder2.Files.Cast<IDataCompare>().ToList()));
