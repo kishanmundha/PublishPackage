@@ -52,6 +52,10 @@ namespace PublishPackage.Models
 
             sb.Append(string.Join("", this.ConstraintKeys.Select(x => x.GetCreateScript())));
 
+            sb.Append(string.Join("", this.Views.Select(x => x.GetCreateScript())));
+
+            sb.Append(string.Join("", this.Procedures.Select(x => x.GetCreateScript())));
+
             return sb.ToString();
         }
 
@@ -89,11 +93,14 @@ namespace PublishPackage.Models
         {
             return new
             {
+                DatabaseName = this.DatabaseName,
                 Tables = this.Tables.Select(x=>x.GetJsonObject()),
                 DefaultConstraints = this.DefaultConstraints.Select(x => x.GetJsonObject()),
                 ConstraintKeys = this.ConstraintKeys.Select(x => x.GetJsonObject()),
                 CheckConstraints = this.CheckConstraints.Select(x => x.GetJsonObject()),
-                ForeignKeys = this.ForeignKeys.Select(x => x.GetJsonObject())
+                ForeignKeys = this.ForeignKeys.Select(x => x.GetJsonObject()),
+                Views = this.Views.Select(x=>x.GetJsonObject()),
+                Procedures = this.Procedures.Select(x => x.GetJsonObject())
             };
         }
 

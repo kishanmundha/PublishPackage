@@ -33,6 +33,25 @@ namespace PublishPackage.Models
         {
             StringBuilder sb = new StringBuilder();
 
+            #region DROP
+            foreach (var checkConstraint in this.CheckConstraints.Where(x => x.Status == DataCompareStatus.Deleted || x.Status == DataCompareStatus.Modified))
+            {
+                sb.Append(checkConstraint.OldData.GetDropScript());
+            }
+            foreach (var defaultConstraint in this.DefaultConstraints.Where(x => x.Status == DataCompareStatus.Deleted || x.Status == DataCompareStatus.Modified))
+            {
+                sb.Append(defaultConstraint.OldData.GetDropScript());
+            }
+            foreach (var constraintKey in this.ConstraintKeys.Where(x => x.Status == DataCompareStatus.Deleted || x.Status == DataCompareStatus.Modified))
+            {
+                sb.Append(constraintKey.OldData.GetDropScript());
+            }
+            foreach (var foreignKey in this.ForeignKeys.Where(x => x.Status == DataCompareStatus.Deleted || x.Status == DataCompareStatus.Modified))
+            {
+                sb.Append(foreignKey.OldData.GetDropScript());
+            }
+            #endregion
+
             #region Table
             foreach (var table in this.Tables)
             {
@@ -53,7 +72,7 @@ namespace PublishPackage.Models
             #endregion
 
             #region CheckConstraints
-            foreach (var checkConstraint in this.CheckConstraints)
+            foreach (var checkConstraint in this.CheckConstraints.Where(x => x.Status != DataCompareStatus.Deleted))
             {
                 switch (checkConstraint.Status)
                 {
@@ -61,18 +80,14 @@ namespace PublishPackage.Models
                         sb.Append(checkConstraint.NewData.GetCreateScript());
                         break;
                     case DataCompareStatus.Modified:
-                        sb.Append(checkConstraint.OldData.GetDropScript());
                         sb.Append(checkConstraint.NewData.GetCreateScript());
-                        break;
-                    case DataCompareStatus.Deleted:
-                        sb.Append(checkConstraint.OldData.GetDropScript());
                         break;
                 }
             }
             #endregion
 
             #region DefaultConstraints
-            foreach (var defaultConstraint in this.DefaultConstraints)
+            foreach (var defaultConstraint in this.DefaultConstraints.Where(x => x.Status != DataCompareStatus.Deleted))
             {
                 switch (defaultConstraint.Status)
                 {
@@ -80,17 +95,13 @@ namespace PublishPackage.Models
                         sb.Append(defaultConstraint.NewData.GetCreateScript());
                         break;
                     case DataCompareStatus.Modified:
-                        sb.Append(defaultConstraint.OldData.GetDropScript());
                         sb.Append(defaultConstraint.NewData.GetCreateScript());
-                        break;
-                    case DataCompareStatus.Deleted:
-                        sb.Append(defaultConstraint.OldData.GetDropScript());
                         break;
                 }
             }
             #endregion
             #region ConstraintKeys
-            foreach (var constraintKey in this.ConstraintKeys)
+            foreach (var constraintKey in this.ConstraintKeys.Where(x => x.Status != DataCompareStatus.Deleted))
             {
                 switch (constraintKey.Status)
                 {
@@ -98,17 +109,13 @@ namespace PublishPackage.Models
                         sb.Append(constraintKey.NewData.GetCreateScript());
                         break;
                     case DataCompareStatus.Modified:
-                        sb.Append(constraintKey.OldData.GetDropScript());
                         sb.Append(constraintKey.NewData.GetCreateScript());
-                        break;
-                    case DataCompareStatus.Deleted:
-                        sb.Append(constraintKey.OldData.GetDropScript());
                         break;
                 }
             }
             #endregion
             #region ForeignKeys
-            foreach (var foreignKey in this.ForeignKeys)
+            foreach (var foreignKey in this.ForeignKeys.Where(x => x.Status != DataCompareStatus.Deleted))
             {
                 switch (foreignKey.Status)
                 {
@@ -116,11 +123,7 @@ namespace PublishPackage.Models
                         sb.Append(foreignKey.NewData.GetCreateScript());
                         break;
                     case DataCompareStatus.Modified:
-                        sb.Append(foreignKey.OldData.GetDropScript());
                         sb.Append(foreignKey.NewData.GetCreateScript());
-                        break;
-                    case DataCompareStatus.Deleted:
-                        sb.Append(foreignKey.OldData.GetDropScript());
                         break;
                 }
             }

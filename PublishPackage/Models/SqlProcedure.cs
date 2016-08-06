@@ -67,5 +67,14 @@ GO
         {
             return string.Format("DROP PROCEDURE [{0}]", this.ProcedureName);
         }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                this.ProcedureName,
+                this.ProcedureDefination
+            };
+        }
     }
 }

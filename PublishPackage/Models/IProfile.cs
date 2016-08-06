@@ -357,6 +357,11 @@ namespace PublishPackage.Models
 
         public IOperationStep GetNextInstance()
         {
+            if (string.IsNullOrWhiteSpace(txtBox.Text))
+            {
+                throw new Exception("Fill version name");
+            }
+
             var obj  = new ExecuteOperation();
 
             obj.data = this.data;

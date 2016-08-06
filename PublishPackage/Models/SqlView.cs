@@ -40,5 +40,14 @@ namespace PublishPackage.Models
         {
             return "DROP VIEW " + this.ViewName + "\r\nGO\r\n\r\n";
         }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                this.ViewName,
+                this.ViewDefinition
+            };
+        }
     }
 }
