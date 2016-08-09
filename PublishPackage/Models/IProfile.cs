@@ -204,7 +204,28 @@ namespace PublishPackage.Models
 
             cbx.SelectedValueChanged += (s, e) =>
             {
-                rtb.Text = ((s as ComboBox).SelectedValue as IProfile).InfoString;
+                var profile = (s as ComboBox).SelectedValue as IProfile;
+
+                if (profile == null)
+                {
+                    rtb.Text = @"There is no profile configured, Put profiles in ""Profiles"" folder in "".json"" format.
+
+Sample JSON:
+{
+    ""profileName"" : ""Profile 1"",
+    ""profileType"" : ""Archive"",
+    ""sourcePath"" : ""D:\\PublishedSitesPath"",
+    ""sourceDBPath"" : ""data source=192.168.0.10;initial catalog=dbName;integrated security=False;User Id=sa;Password=testpassword"",
+    ""versionFolderPath"" : ""D:\\version""
+}
+
+Use profileType always ""Archive""
+                ";
+                }
+                else
+                {
+                    rtb.Text = ((s as ComboBox).SelectedValue as IProfile).InfoString;
+                }
             };
 
             return panel;
@@ -233,6 +254,10 @@ namespace PublishPackage.Models
             var obj = new VersionSelect();
 
             var p = (cbx.SelectedValue as ArchiveProfile);
+
+            if (p == null)
+                throw new Exception("Profile required");
+
             obj.data = new ExpandoObject();
             obj.data.ProfileName = p.ProfileName;
             obj.data.SourcePath = p.SourcePath;
@@ -246,6 +271,9 @@ namespace PublishPackage.Models
             List<IProfile> list = new List<IProfile>();
 
             string dir = System.IO.Directory.GetCurrentDirectory() + "\\Profiles";
+
+            if (!Directory.Exists(dir))
+                return list;
 
             var files = System.IO.Directory.GetFiles(dir, "*.json");
 
