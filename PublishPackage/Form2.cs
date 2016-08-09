@@ -29,7 +29,7 @@ namespace PublishPackage
             //nextAnimation = new System.Threading.Thread(() => {
             //});
 
-            operation = new Models.ProfileSelect();
+            operation = new Models.LegelPageAccept();
             Next();
             //panel = operation.GetComponent();
             //panel.Width = this.Width;
@@ -72,6 +72,11 @@ namespace PublishPackage
 
         private void AutoNext()
         {
+            if (operation.IsLastStep)
+            {
+                Application.Exit();
+                return;
+            }
             var NextOperation = operation.GetNextInstance();
             NextOperation.PreviousStep = operation;
             operation = NextOperation;
@@ -99,6 +104,8 @@ namespace PublishPackage
 
             CurrentPanel = panel;
 
+            ChangeButtonStatus();
+
             operation.Start();
         }
 
@@ -115,9 +122,31 @@ namespace PublishPackage
 
             CurrentPanel.Left = 0;
             CurrentPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right;
+
+            ChangeButtonStatus();
+
+            operation.Start();
+        }
+
+        private void ChangeButtonStatus()
+        {
+            button2.Visible = !operation.IsFirstStep && !operation.IsLastStep;
+            button2.Enabled = !operation.LockPreviousStep || !operation.IsProgressive;
+            button1.Enabled = !operation.IsProgressive || !operation.IsLastStep;
+
+            button1.Text = operation.IsLastStep ? "&Finish" : "&Next";
         }
 
 
         #endregion
+
+        private void Form2_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (operation.IsProgressive)
+            {
+                e.Cancel = true;
+                MessageBox.Show("Can't close on progress");
+            }
+        }
     }
 }

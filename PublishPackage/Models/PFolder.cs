@@ -13,7 +13,7 @@ namespace PublishPackage.Models
         public string RelativePath { get; set; }
         public PFolder()
         {
-            this.Files = new List<IDataCompare>();
+            this.Files = new List<IPFile>();
             this.Folders = new List<PFolder>();
         }
 
@@ -38,12 +38,29 @@ namespace PublishPackage.Models
             throw new NotImplementedException();
         }
 
-        public List<IDataCompare> Files { get; set; }
+        public List<IPFile> Files { get; set; }
         public List<PFolder> Folders { get; set; }
 
         public override string ToString()
         {
             return this.FolderName;
+        }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                FolderName = this.FolderName,
+                FolderPath = this.FolderPath,
+                RelativePath = this.RelativePath,
+                Files = this.Files.Select(x=>x.GetJsonObject()),
+                Folders = this.Folders.Select(x=>x.GetJsonObject())
+            };
+        }
+
+        public string GetJsonString()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this.GetJsonObject());
         }
     }
 }

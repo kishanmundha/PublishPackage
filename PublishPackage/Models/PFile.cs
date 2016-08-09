@@ -43,5 +43,22 @@ namespace PublishPackage.Models
         {
             return this.FileName;
         }
+
+        public object GetJsonObject()
+        {
+            return new
+            {
+                FileName = this.FileName,
+                FilePath = this.FilePath,
+                RelativePath = this.RelativePath,
+                Hash = this.Hash
+            };
+        }
+
+        public string GetJsonString()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this.GetJsonObject());
+        }
+
     }
 }

@@ -59,12 +59,16 @@ namespace PublishPackage.Models
         IOperationStep PreviousStep { get; set; }
         dynamic data { get; set; }
 
-        bool CanClose { get; set; }
+        bool IsProgressive { get; }
         void Start();
         Panel GetComponent();
         IOperationStep GetNextInstance();
 
         event EventHandler OnComplete;
+
+        bool IsFirstStep { get; }
+        bool IsLastStep { get; }
+        bool LockPreviousStep { get; }
     }
 
     /*
@@ -78,21 +82,83 @@ namespace PublishPackage.Models
      * ProgressBar - Make arcvhie
      */
 
-    public class ProfileSelect : IOperationStep
+    public class LegelPageAccept : IOperationStep
     {
-        ComboBox cbx;
-        public IOperationStep PreviousStep
+        CheckBox cb;
+        public bool IsProgressive { get; }
+
+        public dynamic data { get; set; }
+
+        public IOperationStep PreviousStep { get; set; }
+
+        public bool IsFirstStep
         {
             get
             {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
+                return true;
             }
         }
+
+        public bool IsLastStep { get; }
+
+        public bool LockPreviousStep
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public event EventHandler OnComplete;
+
+        public Panel GetComponent()
+        {
+            Panel panel = new Panel();
+            panel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            //panel.BorderStyle = BorderStyle.FixedSingle;
+
+            RichTextBox rtb = new RichTextBox();
+            rtb.Name = "rtb1";
+            rtb.Left = 10;
+            rtb.Top = 20;
+            rtb.BorderStyle = BorderStyle.None;
+            rtb.BackColor = System.Drawing.SystemColors.Window;
+            rtb.Width = panel.Width - 40;
+            rtb.Height = panel.Height - 200;
+            rtb.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            rtb.ReadOnly = true;
+            rtb.Text = @"This software is currently avaiable for only beta version. Use this sowftware on your own risk.";
+
+            panel.Controls.Add(rtb);
+
+            cb = new CheckBox();
+            cb.Left = 10;
+            cb.Top = panel.Height - 75;
+            cb.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
+            cb.Text = "I Accept";
+
+            panel.Controls.Add(cb);
+
+            return panel;
+        }
+
+        public IOperationStep GetNextInstance()
+        {
+            if (!cb.Checked)
+                throw new Exception("To continue, you must accept agreement");
+            return new ProfileSelect();
+        }
+
+        public void Start()
+        {
+            
+        }
+    }
+
+    public class ProfileSelect : IOperationStep
+    {
+        ComboBox cbx;
+        public IOperationStep PreviousStep { get; set; }
 
         public event EventHandler OnComplete;
 
@@ -146,20 +212,21 @@ namespace PublishPackage.Models
 
         public IProfile Profile { get; set; }
 
-        public bool CanClose
+        public bool IsProgressive { get; }
+
+        public dynamic data { get; set; }
+
+        public bool IsFirstStep { get { return true; } }
+
+        public bool IsLastStep { get; }
+
+        public bool LockPreviousStep
         {
             get
             {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
+                return true;
             }
         }
-
-        public dynamic data { get; set; }
 
         public IOperationStep GetNextInstance()
         {
@@ -182,7 +249,7 @@ namespace PublishPackage.Models
 
             var files = System.IO.Directory.GetFiles(dir, "*.json");
 
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 try
                 {
@@ -191,7 +258,7 @@ namespace PublishPackage.Models
                     if (obj == null)
                         continue;
 
-                    if(obj.profileType == "Archive")
+                    if (obj.profileType == "Archive")
                     {
                         var p = new ArchiveProfile();
                         p.ProfileName = obj.profileName;
@@ -215,11 +282,17 @@ namespace PublishPackage.Models
     public class VersionSelect : IOperationStep
     {
         ComboBox cbx;
-        public bool CanClose { get; set; }
+        public bool IsProgressive { get; }
 
         public IOperationStep PreviousStep { get; set; }
 
         public dynamic data { get; set; }
+
+        public bool IsFirstStep { get; }
+
+        public bool IsLastStep { get; }
+
+        public bool LockPreviousStep { get; }
 
         public event EventHandler OnComplete;
 
@@ -255,7 +328,8 @@ namespace PublishPackage.Models
 
         public void Start()
         {
-            
+            if (cbx.Items.Count > 0)
+                cbx.SelectedIndex = cbx.Items.Count - 1;
         }
 
         private System.Data.DataTable GetVersionList()
@@ -268,7 +342,7 @@ namespace PublishPackage.Models
 
             var files = Directory.GetFiles(VersionFolderPath, "*.zip");
 
-            foreach(var f in files)
+            foreach (var f in files)
             {
                 FileInfo fi = new FileInfo(f);
 
@@ -293,11 +367,17 @@ namespace PublishPackage.Models
     public class OptionSelect : IOperationStep
     {
         TextBox txtBox;
-        public bool CanClose { get; set; }
+        public bool IsProgressive { get;}
 
         public IOperationStep PreviousStep { get; set; }
 
         public dynamic data { get; set; }
+
+        public bool IsFirstStep { get; }
+
+        public bool IsLastStep { get; }
+
+        public bool LockPreviousStep { get; }
 
         public event EventHandler OnComplete;
 
@@ -311,8 +391,8 @@ namespace PublishPackage.Models
             var checkBox1 = new System.Windows.Forms.CheckBox();
             var checkBox2 = new System.Windows.Forms.CheckBox();
 
-            groupBox1.Controls.Add(checkBox2);
-            groupBox1.Controls.Add(checkBox1);
+            //groupBox1.Controls.Add(checkBox2);
+            //groupBox1.Controls.Add(checkBox1);
             groupBox1.Location = new System.Drawing.Point(10, 20);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new System.Drawing.Size(panel.Width - 40, panel.Height - 80);
@@ -337,10 +417,19 @@ namespace PublishPackage.Models
             checkBox2.Text = "checkBox2";
             checkBox2.UseVisualStyleBackColor = true;
 
+            Label lbl = new Label();
+            lbl.Text = "Version name";
+            lbl.Left = 10;
+            lbl.Top = 40;
+            groupBox1.Controls.Add(lbl);
+
             txtBox = new TextBox();
             txtBox.Location = new System.Drawing.Point(10, 80);
-            txtBox.Name = "Name";
-            txtBox.Size = new System.Drawing.Size(98, 21);
+            txtBox.Left = 10;
+            txtBox.Top = 80;
+            txtBox.Width = groupBox1.Width - 20;
+            txtBox.Height = 21;
+            txtBox.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
 
             groupBox1.Controls.Add(txtBox);
 
@@ -351,7 +440,7 @@ namespace PublishPackage.Models
 
         public void Start()
         {
-            
+
         }
 
 
@@ -362,7 +451,7 @@ namespace PublishPackage.Models
                 throw new Exception("Fill version name");
             }
 
-            var obj  = new ExecuteOperation();
+            var obj = new ExecuteOperation();
 
             obj.data = this.data;
             obj.data.VersionName = txtBox.Text;
@@ -374,11 +463,17 @@ namespace PublishPackage.Models
     public class ExecuteOperation : IOperationStep
     {
         System.ComponentModel.BackgroundWorker bg;
-        public bool CanClose { get; set; }
+        public bool IsProgressive { get { return true; } }
 
         public IOperationStep PreviousStep { get; set; }
 
         public dynamic data { get; set; }
+
+        public bool IsFirstStep { get; }
+
+        public bool IsLastStep { get; }
+
+        public bool LockPreviousStep { get { return true; } }
 
         public event EventHandler OnComplete;
 
@@ -428,6 +523,8 @@ namespace PublishPackage.Models
             bg = new System.ComponentModel.BackgroundWorker();
             bg.DoWork += (s, e) =>
             {
+                bg.ReportProgress(0, "Preparing...");
+
                 var path = System.IO.Path.GetTempPath();
                 string tempDirectory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
                 System.IO.Directory.CreateDirectory(tempDirectory);
@@ -437,7 +534,7 @@ namespace PublishPackage.Models
                 var tempOldPath = tempDirectory + "\\old";
 
                 bool LastVersionSelected = false;
-                if(this.data.LastVersionFile != null)
+                if (this.data.LastVersionFile != null)
                 {
                     Directory.CreateDirectory(tempOldPath);
                     System.IO.Compression.ZipFile.ExtractToDirectory(this.data.LastVersionFile, tempOldPath);
@@ -453,6 +550,8 @@ namespace PublishPackage.Models
                 Directory.CreateDirectory(targetpath);
 
                 DirectoryCopy(sourcePath, targetpath, true);
+
+                bg.ReportProgress(25, "Comparing...");
 
                 ISqlReader reader = new SqlReaderByDatabase();
                 SqlDatabase database = reader.Get(this.data.SourceDBPath);
@@ -475,9 +574,17 @@ namespace PublishPackage.Models
                 PFolder folder1 = null;
                 SqlDatabase databaseOld = null;
 
-                if(LastVersionSelected)
+                if (LastVersionSelected)
                 {
-                    folder1 = fReader.Get(tempOldPath + "\\code");
+                    if (File.Exists(tempOldPath + "\\codeStructure.json"))
+                    {
+                        IFolderReader fReader2 = new FolderReaderFromJson();
+                        folder1 = fReader2.Get(tempOldPath + "\\codeStructure.json");
+                    }
+                    else
+                    {
+                        folder1 = fReader.Get(tempOldPath + "\\code");
+                    }
 
                     ISqlReader reader2 = new SqlReaderByJson();
                     databaseOld = reader2.Get(tempOldPath + "\\db\\script.json");
@@ -493,6 +600,10 @@ namespace PublishPackage.Models
 
                 file = File.CreateText(comparePath + "\\codeCompareResult.txt");
                 file.Write(folderCompare.GetScript());
+                file.Close();
+
+                file = File.CreateText(comparePath + "\\codeStructure.json");
+                file.Write(folder2.GetJsonString());
                 file.Close();
 
                 var compareDBPath = comparePath + "\\db";
@@ -513,13 +624,15 @@ namespace PublishPackage.Models
 
                 var fileList = folderCompare.GetFileList();
 
-                foreach(var f in fileList)
+                foreach (var f in fileList)
                 {
                     var folderName = GetFolderName(compareTargetpath + f);
                     SafeCreateDirectory(folderName);
 
                     File.Copy(targetpath + f, compareTargetpath + f, true);
                 }
+
+                bg.ReportProgress(70, "Making archive...");
 
                 string VersionFolderPath = this.data.VersionFolderPath;
 
@@ -530,22 +643,22 @@ namespace PublishPackage.Models
 
                 Directory.Delete(tempDirectory, true);
 
-                //int a = 0;
-                //for (var i = 0; i < 10000; i++)
-                //{
-                //    for (var j = 0; j < 100000; j++)
-                //        a++;
-
-                //    //p.Update((i * 100) / 10000);
-                //    bg.ReportProgress((i * 100) / 10000);
-                //}
-
                 bg.ReportProgress(100);
+                System.Threading.Thread.Sleep(1000);
             };
 
             bg.ProgressChanged += (s, e) =>
             {
-                p.Update(e.ProgressPercentage);
+                string msg = (e.UserState as string);
+
+                if (msg != null)
+                {
+                    p.Update(e.ProgressPercentage, msg);
+                }
+                else
+                {
+                    p.Update(e.ProgressPercentage);
+                }
             };
 
             bg.RunWorkerCompleted += (s, e) =>
@@ -563,7 +676,7 @@ namespace PublishPackage.Models
         {
             DirectoryInfo di = new DirectoryInfo(folderName);
 
-            if(!di.Exists)
+            if (!di.Exists)
             {
                 if (!di.Parent.Exists)
                 {
@@ -593,11 +706,17 @@ namespace PublishPackage.Models
 
     public class ShowCompareResult : IOperationStep
     {
-        public bool CanClose { get; set; }
+        public bool IsProgressive { get; }
 
         public dynamic data { get; set; }
 
         public IOperationStep PreviousStep { get; set; }
+
+        public bool IsFirstStep { get; }
+
+        public bool IsLastStep { get { return true; } }
+
+        public bool LockPreviousStep { get { return true; } }
 
         public event EventHandler OnComplete;
 
@@ -607,17 +726,26 @@ namespace PublishPackage.Models
             panel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             //panel.BorderStyle = BorderStyle.FixedSingle;
 
+            Label lbl = new Label();
+            lbl.Text = "Completed";
+            lbl.Top = 20;
+            lbl.Left = 10;
+
+            panel.Controls.Add(lbl);
+
             return panel;
         }
 
         public IOperationStep GetNextInstance()
         {
-            throw new NotImplementedException();
+            Application.Exit();
+            return null;
+            //throw new NotImplementedException();
         }
 
         public void Start()
         {
-            
+
         }
     }
 
@@ -636,6 +764,8 @@ namespace PublishPackage.Models
             lbl.Text = "Progress";
             lbl.Top = 80;
             lbl.Left = 10;
+            lbl.Width = panel.Width - 20;
+            lbl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             panel.Controls.Add(lbl);
 
@@ -656,7 +786,15 @@ namespace PublishPackage.Models
             //if (progressBar.InvokeRequired)
             //    progressBar.Invoke(() => { progressBar.Value = Math.Min(Math.Max(p, 0), 100); });
             //else
-                progressBar.Value = Math.Min(Math.Max(p, 0), 100);
+            progressBar.Value = Math.Min(Math.Max(p, 0), 100);
+        }
+
+        private void SetStatus(string msg)
+        {
+            //if (progressBar.InvokeRequired)
+            //    progressBar.Invoke(() => { progressBar.Value = Math.Min(Math.Max(p, 0), 100); });
+            //else
+            statusLabel.Text = msg;
         }
 
         public void Update(int p)
@@ -666,12 +804,13 @@ namespace PublishPackage.Models
 
         public void Update(string msg)
         {
-
+            SetStatus(msg);
         }
 
         public void Update(int p, string msg)
         {
-
+            SetProgress(p);
+            SetStatus(msg);
         }
     }
 

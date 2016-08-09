@@ -457,7 +457,7 @@ ORDER BY KeyName
                     database.DefaultConstraints.Add(new SqlDefaultConstraint
                     {
                         ColumnName = defaultConstraint.ColumnName,
-                        Definition = defaultConstraint.Defination,
+                        Definition = defaultConstraint.Definition,
                         KeyName = defaultConstraint.KeyName,
                         TableName = defaultConstraint.TableName
                     });

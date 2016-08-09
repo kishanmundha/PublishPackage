@@ -67,7 +67,7 @@ namespace PublishPackage.Models
             sb.Append("CREATE TABLE [" + this.TableName + "](\r\n");
 
             // columns
-            sb.Append("\t" + string.Join(",\r\n\t", this.Columns.Select(x => x.GetScript())));
+            sb.Append("\t" + string.Join(",\r\n\t", this.Columns.OrderBy(x=>x.OridinalPosition).Select(x => x.GetScript())));
 
             // Default constraints
 

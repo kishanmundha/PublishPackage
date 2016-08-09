@@ -52,4 +52,44 @@ namespace PublishPackage.Models
             return folder;
         }
     }
+
+    class FolderReaderFromJson : IFolderReader
+    {
+        public PFolder Get(string source)
+        {
+            var str = System.IO.File.ReadAllText(source);
+
+            dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(str);
+
+            return Get(obj, (string)obj.FolderPath);
+        }
+
+        public PFolder Get(dynamic obj, string fixPath)
+        {
+            PFolder folder = new PFolder();
+            folder.FolderPath = obj.FolderPath;
+            folder.FolderName = obj.FolderName;
+            folder.RelativePath = obj.RelativePath;
+
+            foreach (dynamic file in obj.Files)
+            {
+                PHashFile pFile = new PHashFile();
+                pFile.FileName = file.FileName;
+                pFile.FilePath = file.FilePath;
+                pFile.RelativePath = file.RelativePath;
+                pFile.Hash = file.Hash;
+
+                folder.Files.Add(pFile);
+            }
+
+            foreach (var fld in obj.Folders)
+            {
+                PFolder pFolder = Get(fld, fixPath);
+
+                folder.Folders.Add(pFolder);
+            }
+
+            return folder;
+        }
+    }
 }
