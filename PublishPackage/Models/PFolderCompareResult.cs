@@ -130,7 +130,7 @@ namespace PublishPackage.Models
                         break;
                     case DataCompareStatus.Modified:
                         // compare sub directory
-                        var folderCompareResult = PFolderCompareResult.Compare(folder.NewData, folder.OldData);
+                        var folderCompareResult = PFolderCompareResult.Compare(folder.OldData, folder.NewData);
                         list.AddRange(folderCompareResult.GetFileList());
                         break;
                 }

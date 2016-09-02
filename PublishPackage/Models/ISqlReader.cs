@@ -15,7 +15,7 @@ namespace PublishPackage.Models
     {
         private static readonly string TABLE_LIST_COMMAND = "SELECT TABLE_NAME AS TableName FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
         private static readonly string VIEW_LIST_COMMAND = "select TABLE_NAME AS ViewName, VIEW_DEFINITION AS ViewDefinition from INFORMATION_SCHEMA.VIEWS";
-        private static readonly string PROCEDURE_LIST_COMMAND = "SELECT ROUTINE_NAME AS ProcedureName, ROUTINE_DEFINITION AS Definition FROM INFORMATION_SCHEMA.ROUTINES";
+        private static readonly string PROCEDURE_LIST_COMMAND = "select name AS ProcedureName, OBJECT_DEFINITION(object_id) as Definition from sys.procedures order by name";
         private static readonly string COLUMN_LIST_COMMAND = "select table_name as TableName, column_name as ColumnName, data_type as DataType, CHARACTER_MAXIMUM_LENGTH as Length, NUMERIC_PRECISION as Prec, NUMERIC_SCALE as Scale, datetime_precision as DateTimePrec, ORDINAL_POSITION as OrdinalPosition, IS_NULLABLE as IsNullable from INFORMATION_SCHEMA.COLUMNS";
         private static readonly string CHECK_CONSTRAINT_LIST_COMMAND = "select object_name(parent_object_id) as TableName, name as ConstraintName, definition as CheckClause from sys.check_constraints";
 
